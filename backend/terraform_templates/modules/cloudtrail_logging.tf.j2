@@ -1,0 +1,18 @@
+resource "aws_cloudwatch_log_group" "{{ trail_name }}_logs" {
+  name              = "/aws/cloudtrail/{{ trail_name }}"
+  retention_in_days = {{ log_retention_days | default(180) }}
+
+  tags = {
+    ComplianceFramework = "CERT-In-2022"
+    MandatoryRetention  = "180-Days"
+  }
+}
+
+resource "aws_cloudtrail" "{{ trail_name }}" {
+  name                          = "{{ trail_name }}"
+  s3_bucket_name                = "{{ audit_bucket_name }}"
+  include_global_service_events = true
+  is_multi_region_trail         = {{ is_multi_region | default('true') }}
+  enable_logging                = {{ enable_logging | default('true') }}
+  cloud_watch_logs_group_arn    = aws_cloudwatch_log_group.{{ trail_name }}_logs.arn
+}

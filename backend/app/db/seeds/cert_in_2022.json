@@ -1,0 +1,55 @@
+{
+  "regulation": {
+    "id": "CERTIN-DIR-2022",
+    "name": "CERT-In Directions under Section 70B(6) of IT Act, 2000",
+    "jurisdiction": "India",
+    "version": "Directions No. 20(3)/2022-CERT-In",
+    "effective_date": "2022-06-27",
+    "official_source_url": "https://www.cert-in.org.in/Directions2022.jsp"
+  },
+  "requirements": [
+    {
+      "id": "CERTIN-2022-LOG-RETENTION",
+      "title": "Mandatory 180-Day System & Access Log Retention within Indian Jurisdiction",
+      "requirement_text": "All service providers, intermediaries, data centers, body corporate and Government organizations shall enable and securely maintain logs of all their ICT systems for a rolling period of 180 consecutive days within the Indian jurisdiction.",
+      "version": "1.0",
+      "mandatory": true,
+      "applicability_conditions": {
+        "jurisdiction": "India"
+      },
+      "status": "APPROVED",
+      "approved_by": "Government Compliance Board",
+      "official_source": "Annexure I, Section 2(v), CERT-In 2022",
+      "policy_reference": "POL-CERTIN-LOG-180"
+    },
+    {
+      "id": "CERTIN-2022-NTP-SYNC",
+      "title": "Mandatory Time Synchronization with National Physical Laboratory (NPL) NTP",
+      "requirement_text": "All service providers and intermediaries shall connect to the Network Time Protocol (NTP) Server of National Physical Laboratory (NPL) or National Informatics Centre (NIC) to synchronize all system clocks across cloud infrastructure.",
+      "version": "1.0",
+      "mandatory": true,
+      "applicability_conditions": {
+        "jurisdiction": "India"
+      },
+      "status": "APPROVED",
+      "approved_by": "Government Compliance Board",
+      "official_source": "Annexure I, Section 2(i), CERT-In 2022",
+      "policy_reference": "POL-CERTIN-NTP-SYNC"
+    },
+    {
+      "id": "CERTIN-2022-INCIDENT-LOGS",
+      "title": "Cyber Security Incident Telemetry & 6-Hour Reporting Readiness",
+      "requirement_text": "Cloud service providers must maintain real-time telemetry, alarm logging, and multi-region CloudTrail audit logging ready to furnish cybersecurity incident logs within 6 hours of incident notice.",
+      "version": "1.0",
+      "mandatory": true,
+      "applicability_conditions": {
+        "jurisdiction": "India",
+        "environment": "production"
+      },
+      "status": "APPROVED",
+      "approved_by": "Government Compliance Board",
+      "official_source": "Annexure I, Section 2(ii), CERT-In 2022",
+      "policy_reference": "POL-CERTIN-CLOUDTRAIL"
+    }
+  ]
+}

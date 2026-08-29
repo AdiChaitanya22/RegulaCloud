@@ -1,0 +1,364 @@
+/* Canvas Viewport Background */
+#animation-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+  display: block;
+}
+
+/* Scroll Wrapper containing content elements */
+.scroll-wrapper {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+/* Ensure the content is stacked on top of the fixed canvas background */
+.scroll-wrapper > div:not(.loader-overlay) {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+/* Scroll padding and margins to slow down scroll rate for 300 frames */
+.hero-section-wrapper {
+  padding-top: 5vh;
+  margin-bottom: 0 !important;
+}
+
+.features-section-wrapper {
+  margin-bottom: 0 !important;
+}
+
+.compliance-section-wrapper {
+  margin-bottom: 0 !important;
+}
+
+.deploy-section-wrapper {
+  margin-bottom: 0 !important;
+}
+
+/* Premium Cinematic Loader Overlay */
+.loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, #0f0f15 0%, #030305 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.loader-overlay.loaded {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem;
+  background: rgba(15, 15, 20, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 24px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+}
+
+.spinner-container {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.progress-ring {
+  transform: rotate(-90deg);
+  filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.35));
+}
+
+.progress-ring-bg {
+  stroke: #18181b;
+}
+
+.progress-ring-fg {
+  stroke-dasharray: 439.82;
+  stroke-dashoffset: 439.82;
+  transition: stroke-dashoffset 0.1s ease-out;
+  stroke-linecap: round;
+}
+
+.progress-text {
+  position: absolute;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(255, 255, 255, 0.15);
+}
+
+.loader-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.loader-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: #3b82f6;
+  text-transform: uppercase;
+  margin-bottom: 0.2rem;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: glow-pulse-loading 3s infinite alternate;
+}
+
+.loader-subtitle {
+  font-size: 0.85rem;
+  font-weight: 300;
+  letter-spacing: 0.5px;
+  color: #71717a;
+}
+
+.loader-counter {
+  margin-top: 0.8rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #a1a1aa;
+  letter-spacing: 1px;
+}
+
+.loader-counter .divider {
+  color: #3f3f46;
+  margin: 0 4px;
+}
+
+#loaded-count {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* ==========================================
+   Light-Theme Dashboard Components Skinning
+   ========================================== */
+
+/* Overrides headings inside nested components */
+.scroll-wrapper h1, 
+.scroll-wrapper h2, 
+.scroll-wrapper h3 {
+  color: #0f172a !important;
+}
+
+/* Force borders inside pages to blend with light theme */
+.scroll-wrapper .border-\[\#1C2633\],
+.scroll-wrapper [class*="border-[#1C2633]"] {
+  border-color: #e2e8f0 !important;
+}
+
+/* Convert dark panels and lists to white glass / light grey backgrounds */
+.scroll-wrapper div[class*="bg-[#0B0F14]"],
+.scroll-wrapper div[class*="bg-[#111720]"],
+.scroll-wrapper div[class*="bg-[#09111a]"],
+.scroll-wrapper section[class*="bg-[#0B0F14]"] {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Sub-containers inside pages (lists, nodes, metrics) should be light grey */
+.scroll-wrapper .bg-\[\#111720\],
+.scroll-wrapper .bg-\[\#09111a\],
+.scroll-wrapper .bg-\[\#0B0F14\],
+.scroll-wrapper [class*="bg-[#111720]"],
+.scroll-wrapper [class*="bg-[#09111a]"] {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* High legibility text overrides */
+.scroll-wrapper .text-white,
+.scroll-wrapper [class*="text-white"],
+.scroll-wrapper .text-slate-100,
+.scroll-wrapper .text-slate-200,
+.scroll-wrapper .text-slate-300,
+.scroll-wrapper [class*="text-slate-100"],
+.scroll-wrapper [class*="text-slate-200"],
+.scroll-wrapper [class*="text-slate-300"] {
+  color: #0f172a !important;
+}
+
+.scroll-wrapper .text-slate-400,
+.scroll-wrapper .text-slate-500,
+.scroll-wrapper [class*="text-slate-400"],
+.scroll-wrapper [class*="text-slate-500"] {
+  color: #475569 !important;
+}
+
+/* Button styles override inside scroll wrapper */
+.scroll-wrapper button:not(.bg-primary) {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+  transition: all 0.2s ease !important;
+}
+
+.scroll-wrapper button:not(.bg-primary):hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.scroll-wrapper input {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.scroll-wrapper input:focus {
+  border-color: #2563eb !important;
+}
+
+.scroll-wrapper input::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Map Node Custom Overrides (Infrastructure service mesh colors) - Darker text and borders for light theme */
+.scroll-wrapper [class*="bg-blue-500/10"] { background-color: rgba(59, 130, 246, 0.08) !important; color: #0f172a !important; border-color: rgba(59, 130, 246, 0.4) !important; }
+.scroll-wrapper [class*="bg-cyan-500/10"] { background-color: rgba(6, 182, 212, 0.08) !important; color: #0f172a !important; border-color: rgba(6, 182, 212, 0.4) !important; }
+.scroll-wrapper [class*="bg-violet-500/10"] { background-color: rgba(139, 92, 246, 0.08) !important; color: #0f172a !important; border-color: rgba(139, 92, 246, 0.4) !important; }
+.scroll-wrapper [class*="bg-indigo-500/10"] { background-color: rgba(99, 102, 241, 0.08) !important; color: #0f172a !important; border-color: rgba(99, 102, 241, 0.4) !important; }
+.scroll-wrapper [class*="bg-emerald-500/10"] { background-color: rgba(16, 185, 129, 0.08) !important; color: #0f172a !important; border-color: rgba(16, 185, 129, 0.4) !important; }
+.scroll-wrapper [class*="bg-amber-500/10"] { background-color: rgba(245, 158, 11, 0.08) !important; color: #0f172a !important; border-color: rgba(245, 158, 11, 0.4) !important; }
+.scroll-wrapper [class*="bg-rose-500/10"] { background-color: rgba(244, 63, 94, 0.08) !important; color: #0f172a !important; border-color: rgba(244, 63, 94, 0.4) !important; }
+.scroll-wrapper [class*="bg-sky-500/10"] { background-color: rgba(14, 165, 233, 0.08) !important; color: #0f172a !important; border-color: rgba(14, 165, 233, 0.4) !important; }
+.scroll-wrapper [class*="bg-fuchsia-500/10"] { background-color: rgba(217, 70, 239, 0.08) !important; color: #0f172a !important; border-color: rgba(217, 70, 239, 0.4) !important; }
+.scroll-wrapper [class*="bg-lime-500/10"] { background-color: rgba(132, 204, 22, 0.08) !important; color: #0f172a !important; border-color: rgba(132, 204, 22, 0.4) !important; }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #05070a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1c2633;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2e3e54;
+}
+
+@keyframes glow-pulse-loading {
+  0% {
+    filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.2));
+  }
+  100% {
+    filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.6));
+  }
+}
+
+/* Floating Glass Capsule Header */
+.main-header {
+  position: sticky !important;
+  top: 1.5rem !important;
+  z-index: 100 !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(226, 232, 240, 0.85) !important;
+  border-radius: 18px !important;
+  padding: 1rem 2rem !important;
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.12), 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 5rem !important;
+  width: 100% !important;
+}
+
+.logo-icon {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #2563eb !important;
+}
+
+.logo-prefix {
+  color: #475569 !important;
+}
+
+.logo-suffix {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+.scroll-wrapper .btn-signin {
+  background-color: #000000 !important;
+  border-color: #000000 !important;
+  color: #ffffff !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15) !important;
+}
+
+.scroll-wrapper .btn-signin:hover {
+  background-color: #1a1a1a !important;
+  border-color: #1a1a1a !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Expanded Card Padding and Container Size Overrides - Full bleed glass sheets */
+.scroll-wrapper .mx-auto.max-w-\[1320px\] {
+  max-width: 100% !important;
+}
+
+.scroll-wrapper .glass-card {
+  width: 100% !important;
+  border-radius: 0 !important;
+  border-left: none !important;
+  border-right: none !important;
+  box-shadow: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding: 4rem 2rem !important; /* Larger default padding */
+}
+
+@media (min-width: 768px) {
+  .scroll-wrapper .glass-card {
+    padding: 6rem 4rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .scroll-wrapper .glass-card {
+    padding: 8rem 0 !important; /* Spaced vertically, horizontal is handled by container max-width */
+  }
+}

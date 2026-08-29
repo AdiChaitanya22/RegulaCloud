@@ -1,0 +1,72 @@
+{
+  "regulation": {
+    "id": "DPDP-ACT-2023",
+    "name": "Digital Personal Data Protection Act, 2023",
+    "jurisdiction": "India",
+    "version": "Act No. 22 of 2023",
+    "effective_date": "2023-08-11",
+    "official_source_url": "https://www.meity.gov.in/content/digital-personal-data-protection-act-2023"
+  },
+  "requirements": [
+    {
+      "id": "DPDP-2023-SEC8.5",
+      "title": "Reasonable Security Safeguards for Personal Data",
+      "requirement_text": "A Data Fiduciary shall protect personal data in its possession or under its control, by taking reasonable security safeguards to prevent personal data breach, including encryption at rest and in transit.",
+      "version": "1.0",
+      "mandatory": true,
+      "applicability_conditions": {
+        "jurisdiction": "India",
+        "data_categories_include": ["personal_data", "sensitive_data", "financial_data", "health_data"]
+      },
+      "status": "APPROVED",
+      "approved_by": "Government Compliance Board",
+      "official_source": "Section 8(5), DPDPA 2023",
+      "policy_reference": "POL-DPDP-ENC-01"
+    },
+    {
+      "id": "DPDP-2023-SEC8.6",
+      "title": "Personal Data Breach Notification & Logging Readiness",
+      "requirement_text": "In the event of a personal data breach, the Data Fiduciary shall give the Board and each affected Data Principal intimation of such breach in such form and manner as may be prescribed, supported by comprehensive tamper-proof audit trails.",
+      "version": "1.0",
+      "mandatory": true,
+      "applicability_conditions": {
+        "jurisdiction": "India",
+        "data_categories_include": ["personal_data", "financial_data", "health_data"]
+      },
+      "status": "APPROVED",
+      "approved_by": "Government Compliance Board",
+      "official_source": "Section 8(6), DPDPA 2023",
+      "policy_reference": "POL-DPDP-LOG-01"
+    },
+    {
+      "id": "DPDP-2023-SEC8.1",
+      "title": "Data Processing Purpose Limitation & Isolation",
+      "requirement_text": "A Data Fiduciary shall process personal data only for a lawful purpose for which the Data Principal has given consent, and isolate database networks from unapproved public routing.",
+      "version": "1.0",
+      "mandatory": true,
+      "applicability_conditions": {
+        "jurisdiction": "India"
+      },
+      "status": "APPROVED",
+      "approved_by": "Government Compliance Board",
+      "official_source": "Section 8(1), DPDPA 2023",
+      "policy_reference": "POL-DPDP-NET-01"
+    },
+    {
+      "id": "DPDP-2023-SEC9.1",
+      "title": "Additional Obligations on Processing Children's Personal Data",
+      "requirement_text": "The Data Fiduciary shall not undertake tracking or behavioral monitoring of children or targeted advertising directed at children, and enforce strict tokenized identification safeguards.",
+      "version": "1.0",
+      "mandatory": true,
+      "applicability_conditions": {
+        "jurisdiction": "India",
+        "sector": ["Education", "Healthcare"],
+        "data_categories_include": ["child_data"]
+      },
+      "status": "APPROVED",
+      "approved_by": "Government Compliance Board",
+      "official_source": "Section 9(1), DPDPA 2023",
+      "policy_reference": "POL-DPDP-CHILD-01"
+    }
+  ]
+}

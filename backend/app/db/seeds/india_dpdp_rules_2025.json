@@ -1,0 +1,56 @@
+{
+  "regulation": {
+    "id": "DPDP-RULES-2025",
+    "name": "Digital Personal Data Protection Rules, 2025",
+    "jurisdiction": "India",
+    "version": "Draft/Notified Rules 2025",
+    "effective_date": "2025-01-01",
+    "official_source_url": "https://www.meity.gov.in/rules/dpdp-rules-2025"
+  },
+  "requirements": [
+    {
+      "id": "DPDPR-2025-R4.2",
+      "title": "Mandatory Technical Data Erasure and Lifecycle Automation",
+      "requirement_text": "Data Fiduciaries must implement automated lifecycle management rules on cloud storage buckets to archive or securely erase personal data once specified retention windows lapse.",
+      "version": "1.0",
+      "mandatory": false,
+      "applicability_conditions": {
+        "jurisdiction": "India",
+        "data_categories_include": ["personal_data", "financial_data"]
+      },
+      "status": "APPROVED",
+      "approved_by": "Government Compliance Board",
+      "official_source": "Rule 4(2), DPDP Rules 2025",
+      "policy_reference": "POL-DPDPR-LIFECYCLE-01"
+    },
+    {
+      "id": "DPDPR-2025-R6.1",
+      "title": "Access Control and Multi-Factor Administrative Enforcement",
+      "requirement_text": "Cloud environments handling sensitive and personal information must enforce least-privilege IAM policies, disallow root credential access, and enforce MFA for cloud operations.",
+      "version": "1.0",
+      "mandatory": true,
+      "applicability_conditions": {
+        "jurisdiction": "India"
+      },
+      "status": "APPROVED",
+      "approved_by": "Government Compliance Board",
+      "official_source": "Rule 6(1), DPDP Rules 2025",
+      "policy_reference": "POL-DPDPR-IAM-01"
+    },
+    {
+      "id": "DPDPR-2025-R8.3",
+      "title": "Secure Application Code & Vulnerability Remediation Baseline",
+      "requirement_text": "Web applications interacting with citizen personal data must pass static application security testing with zero high-severity unmitigated vulnerabilities or injection vectors.",
+      "version": "1.0",
+      "mandatory": true,
+      "applicability_conditions": {
+        "jurisdiction": "India",
+        "data_categories_include": ["personal_data"]
+      },
+      "status": "APPROVED",
+      "approved_by": "Government Compliance Board",
+      "official_source": "Rule 8(3), DPDP Rules 2025",
+      "policy_reference": "POL-DPDPR-APPSEC-01"
+    }
+  ]
+}

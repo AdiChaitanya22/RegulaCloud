@@ -1,0 +1,17 @@
+resource "aws_db_instance" "{{ db_identifier }}" {
+  identifier           = "{{ db_identifier }}"
+  allocated_storage    = {{ allocated_storage | default(20) }}
+  engine               = "{{ engine | default('postgres') }}"
+  engine_version       = "{{ engine_version | default('15.4') }}"
+  instance_class       = "{{ instance_class | default('db.t3.micro') }}"
+  
+  publicly_accessible = {{ publicly_accessible | default('false') }}
+  storage_encrypted    = {{ storage_encrypted | default('true') }}
+  skip_final_snapshot  = true
+
+  tags = {
+    Environment = "{{ environment }}"
+    Jurisdiction = "India"
+    RegulaControl = "DPDP-SEC8.1"
+  }
+}

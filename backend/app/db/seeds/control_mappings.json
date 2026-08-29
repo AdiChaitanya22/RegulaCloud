@@ -1,0 +1,190 @@
+{
+  "controls": [
+    {
+      "id": "CTRL-AWS-S3-ENC",
+      "name": "S3 Bucket Server-Side KMS Encryption Enforcement",
+      "category": "Cryptography",
+      "description": "Ensures all S3 storage buckets have aws:kms or AES256 server-side encryption enabled by default.",
+      "verification_source": "OPA_TERRAFORM",
+      "expected_state": {
+        "resource_type": "aws_s3_bucket_server_side_encryption_configuration",
+        "sse_algorithm": "aws:kms"
+      }
+    },
+    {
+      "id": "CTRL-AWS-S3-NO-PUBLIC",
+      "name": "S3 Public Access Block & ACL Restriction",
+      "category": "AccessControl",
+      "description": "Verifies that public access block is attached to all S3 buckets with block_public_acls = true.",
+      "verification_source": "OPA_TERRAFORM",
+      "expected_state": {
+        "resource_type": "aws_s3_bucket_public_access_block",
+        "block_public_acls": true,
+        "block_public_policy": true,
+        "ignore_public_acls": true,
+        "restrict_public_buckets": true
+      }
+    },
+    {
+      "id": "CTRL-AWS-RDS-NO-PUBLIC",
+      "name": "RDS Database Public Ingress Isolation",
+      "category": "AccessControl",
+      "description": "Enforces that database instances have publicly_accessible set to false and reside in private VPC subnets.",
+      "verification_source": "OPA_TERRAFORM",
+      "expected_state": {
+        "resource_type": "aws_db_instance",
+        "publicly_accessible": false
+      }
+    },
+    {
+      "id": "CTRL-AWS-RDS-STORAGE-ENC",
+      "name": "RDS Storage Encryption at Rest",
+      "category": "Cryptography",
+      "description": "Ensures RDS database instances have storage_encrypted set to true.",
+      "verification_source": "OPA_TERRAFORM",
+      "expected_state": {
+        "resource_type": "aws_db_instance",
+        "storage_encrypted": true
+      }
+    },
+    {
+      "id": "CTRL-AWS-LOG-180D",
+      "name": "CloudWatch / CloudTrail 180-Day Log Retention",
+      "category": "AuditLogging",
+      "description": "Enforces that CloudWatch Log Groups have retention_in_days >= 180 as mandated by CERT-In.",
+      "verification_source": "OPA_TERRAFORM",
+      "expected_state": {
+        "resource_type": "aws_cloudwatch_log_group",
+        "min_retention_in_days": 180
+      }
+    },
+    {
+      "id": "CTRL-AWS-CLOUDTRAIL-MULTI",
+      "name": "Multi-Region CloudTrail Audit Logging Active",
+      "category": "AuditLogging",
+      "description": "Enforces that CloudTrail is active and configured with is_multi_region_trail = true and enable_logging = true.",
+      "verification_source": "OPA_TERRAFORM",
+      "expected_state": {
+        "resource_type": "aws_cloudtrail",
+        "is_multi_region_trail": true,
+        "enable_logging": true
+      }
+    },
+    {
+      "id": "CTRL-AWS-S3-LIFECYCLE",
+      "name": "Automated Cloud Storage Data Lifecycle & Erasure",
+      "category": "DataGovernance",
+      "description": "Enforces automated S3 lifecycle rules for data retention expiration under DPDP Rules 2025 Rule 4(2).",
+      "verification_source": "OPA_TERRAFORM",
+      "expected_state": {
+        "resource_type": "aws_s3_bucket_lifecycle_configuration",
+        "status": "Enabled"
+      }
+    },
+    {
+      "id": "CTRL-AWS-IAM-MFA",
+      "name": "IAM Least Privilege & Multi-Factor Authentication",
+      "category": "AccessControl",
+      "description": "Enforces IAM least-privilege role boundaries and disallows wildcards without MFA under DPDP Rules 2025 Rule 6(1).",
+      "verification_source": "OPA_TERRAFORM",
+      "expected_state": {
+        "resource_type": "aws_iam_account_password_policy",
+        "require_symbols": true
+      }
+    },
+    {
+      "id": "CTRL-AWS-NTP-SYNC",
+      "name": "National Physical Laboratory / NIC NTP Clock Synchronization",
+      "category": "AuditLogging",
+      "description": "Verifies that EC2 instances and DHCP option sets configure India NIC/NPL NTP servers under CERT-In Directions 2022.",
+      "verification_source": "OPA_TERRAFORM",
+      "expected_state": {
+        "resource_type": "aws_vpc_dhcp_options",
+        "ntp_servers": ["time.nplindia.org", "samay1.nic.in"]
+      }
+    },
+    {
+      "id": "CTRL-SONAR-ZERO-CRITICAL",
+      "name": "SonarQube Zero Critical/High Code Vulnerabilities",
+      "category": "CodeSecurity",
+      "description": "Verifies that static application security testing via SonarQube detects 0 open BLOCKER or CRITICAL issues in the codebase.",
+      "verification_source": "SONARQUBE",
+      "expected_state": {
+        "max_critical_issues": 0,
+        "max_blocker_issues": 0
+      }
+    },
+    {
+      "id": "CTRL-SONAR-INJECTION-FREE",
+      "name": "SonarQube SQL Injection and XSS Free",
+      "category": "CodeSecurity",
+      "description": "Verifies that SonarQube detects zero open security hotspots or CWE-89 / CWE-79 injection vulnerabilities.",
+      "verification_source": "SONARQUBE",
+      "expected_state": {
+        "cwe_violations_disallowed": ["CWE-89", "CWE-79", "CWE-78"]
+      }
+    }
+  ],
+  "mappings": [
+    {
+      "requirement_id": "DPDP-2023-SEC8.5",
+      "control_id": "CTRL-AWS-S3-ENC",
+      "mapping_rationale": "Mandatory storage encryption at rest satisfies reasonable safeguards under Section 8(5) of DPDPA 2023."
+    },
+    {
+      "requirement_id": "DPDP-2023-SEC8.5",
+      "control_id": "CTRL-AWS-RDS-STORAGE-ENC",
+      "mapping_rationale": "Enforcing RDS storage encryption protects relational citizen records from direct volume theft."
+    },
+    {
+      "requirement_id": "DPDP-2023-SEC8.1",
+      "control_id": "CTRL-AWS-RDS-NO-PUBLIC",
+      "mapping_rationale": "Restricting database ingress from the public internet prevents unauthorized data extraction."
+    },
+    {
+      "requirement_id": "DPDP-2023-SEC8.1",
+      "control_id": "CTRL-AWS-S3-NO-PUBLIC",
+      "mapping_rationale": "Blocking public S3 bucket policies ensures data storage is protected from internet scraping."
+    },
+    {
+      "requirement_id": "DPDP-2023-SEC8.6",
+      "control_id": "CTRL-AWS-CLOUDTRAIL-MULTI",
+      "mapping_rationale": "Multi-region CloudTrail audit trails provide the evidentiary basis to identify and notify about data breaches under Section 8(6)."
+    },
+    {
+      "requirement_id": "DPDPR-2025-R4.2",
+      "control_id": "CTRL-AWS-S3-LIFECYCLE",
+      "mapping_rationale": "Automated S3 lifecycle management enforces statutory data erasure schedules under DPDP Rules 2025 Rule 4(2)."
+    },
+    {
+      "requirement_id": "DPDPR-2025-R6.1",
+      "control_id": "CTRL-AWS-IAM-MFA",
+      "mapping_rationale": "IAM password and MFA policy satisfies administrative access control under Rule 6(1)."
+    },
+    {
+      "requirement_id": "DPDPR-2025-R8.3",
+      "control_id": "CTRL-SONAR-ZERO-CRITICAL",
+      "mapping_rationale": "Application security hygiene with zero critical vulnerabilities ensures code-level compliance under DPDP Rules 2025 Rule 8(3)."
+    },
+    {
+      "requirement_id": "DPDPR-2025-R8.3",
+      "control_id": "CTRL-SONAR-INJECTION-FREE",
+      "mapping_rationale": "Protection against SQLi / XSS prevents injection attacks compromising user personal records."
+    },
+    {
+      "requirement_id": "CERTIN-2022-LOG-RETENTION",
+      "control_id": "CTRL-AWS-LOG-180D",
+      "mapping_rationale": "CloudWatch log retention configured for >= 180 days directly satisfies Section 2(v) of CERT-In Directions 2022."
+    },
+    {
+      "requirement_id": "CERTIN-2022-NTP-SYNC",
+      "control_id": "CTRL-AWS-NTP-SYNC",
+      "mapping_rationale": "VPC DHCP NTP synchronization with National Physical Laboratory satisfies Section 2(i) of CERT-In Directions."
+    },
+    {
+      "requirement_id": "CERTIN-2022-INCIDENT-LOGS",
+      "control_id": "CTRL-AWS-CLOUDTRAIL-MULTI",
+      "mapping_rationale": "Multi-region CloudTrail logging provides the required incident audit trail for 6-hour response obligations."
+    }
+  ]
+}

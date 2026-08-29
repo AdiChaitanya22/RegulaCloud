@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL 16 Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: regulacloud-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-regulacloud}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-regulacloud_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-regulacloud_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U regulacloud -d regulacloud_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. SonarQube Community LTS
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: regulacloud-sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_JDBC_USERNAME=${POSTGRES_USER:-regulacloud}
+      - SONAR_JDBC_PASSWORD=${POSTGRES_PASSWORD:-regulacloud_secret}
+      - SONAR_JDBC_URL=jdbc:postgresql://postgres:5432/regulacloud_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
+  # 3. LocalStack (AWS Cloud API Emulator for S3, RDS, CloudTrail, CloudWatch)
+  localstack:
+    image: localstack/localstack:latest
+    container_name: regulacloud-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,rds,cloudtrail,cloudwatch,iam
+      - AWS_DEFAULT_REGION=ap-south-1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+volumes:
+  postgres_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+  localstack_data:

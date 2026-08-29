@@ -1,0 +1,27 @@
+resource "aws_s3_bucket" "{{ bucket_name }}" {
+  bucket = "{{ bucket_name }}"
+  tags = {
+    Environment = "{{ environment }}"
+    Jurisdiction = "India"
+    ManagedBy   = "RegulaCloud"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "{{ bucket_name }}_crypto" {
+  bucket = aws_s3_bucket.{{ bucket_name }}.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "{{ sse_algorithm | default('aws:kms') }}"
+    }
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "{{ bucket_name }}_pab" {
+  bucket = aws_s3_bucket.{{ bucket_name }}.id
+
+  block_public_acls       = {{ block_public | default('true') }}
+  block_public_policy     = {{ block_public | default('true') }}
+  ignore_public_acls      = {{ block_public | default('true') }}
+  restrict_public_buckets = {{ block_public | default('true') }}
+}
