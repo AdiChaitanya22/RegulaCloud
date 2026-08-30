@@ -133,26 +133,34 @@ class ComplianceEngine:
                             reasons.append(v.get("explanation"))
 
                 elif control.verification_source == "SONARQUBE":
-                    # Check for Critical/Blocker vulnerabilities
-                    critical_sonar = [
-                        f for f in sonar_findings 
-                        if f.get("severity") in ["Critical", "Blocker"] or f.get("cwe") in ["CWE-89", "CWE-79"]
-                    ]
-                    if critical_sonar:
-                        req_status = "FAIL"
-                        for cs in critical_sonar:
-                            req_findings.append({
-                                "source": "SONARQUBE",
-                                "control_id": control.id,
-                                "file": cs.get("file"),
-                                "line": cs.get("line"),
-                                "rule": cs.get("rule"),
-                                "title": cs.get("title")
-                            })
-                            reasons.append(f"SonarQube finding: {cs.get('title')} at {cs.get('file')}:{cs.get('line')}")
+                    if sonar_findings is None:
+                        req_status = "UNKNOWN"
+                        reasons.append("SonarQube verification service is unavailable. Empirical application security evidence could not be verified.")
+                    else:
+                        # Check for Critical/Blocker vulnerabilities and statutory CWE flaws (SQLi, XSS, Weak Crypto)
+                        critical_sonar = [
+                            f for f in sonar_findings 
+                            if f.get("severity") in ["Critical", "Blocker"] or f.get("cwe") in ["CWE-89", "CWE-79", "CWE-327"]
+                        ]
+                        if critical_sonar:
+                            req_status = "FAIL"
+                            for cs in critical_sonar:
+                                req_findings.append({
+                                    "source": "SONARQUBE",
+                                    "control_id": control.id,
+                                    "file": cs.get("file"),
+                                    "line": cs.get("line"),
+                                    "rule": cs.get("rule"),
+                                    "title": cs.get("title")
+                                })
+                                reasons.append(f"SonarQube finding: {cs.get('title')} at {cs.get('file')}:{cs.get('line')}")
 
             if req_status == "FAIL":
                 failed_count += 1
+                if req.mandatory:
+                    is_deployment_blocked = True
+            elif req_status == "UNKNOWN":
+                unknown_count += 1
                 if req.mandatory:
                     is_deployment_blocked = True
             else:
@@ -182,7 +190,7 @@ class ComplianceEngine:
             "failed": failed_count,
             "unknown": unknown_count,
             "opa_violations_count": len(opa_violations),
-            "sonar_findings_count": len(sonar_findings),
+            "sonar_findings_count": len(sonar_findings) if sonar_findings is not None else 0,
             "timestamp": "2026-08-29T18:00:00Z"
         }
         evidence_hash = hashlib.sha256(json.dumps(evidence_payload, sort_keys=True).encode()).hexdigest()
@@ -233,5 +241,5 @@ class ComplianceEngine:
             "evidence_hash": evidence_hash,
             "evaluations": req_evaluations,
             "opa_violations": opa_violations,
-            "sonar_findings": sonar_findings
+            "sonar_findings": sonar_findings or []
         }

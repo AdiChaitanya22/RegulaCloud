@@ -3,22 +3,16 @@ import {
   Send,
   Sparkles,
   User,
-  ShieldAlert,
-  ShieldCheck,
   Info,
   ChevronDown,
   ChevronUp,
-  FileCheck,
-  Cpu,
   Layers,
-  RotateCcw,
   ExternalLink,
   BookOpen
 } from 'lucide-react'
 import { Card } from '../components/ui/card'
-import { Badge } from '../components/ui/badge'
 import { aiService } from '../services/aiService'
-import type { AIChatResponsePayload, AICitation } from '../services/aiService'
+import type { AICitation } from '../services/aiService'
 
 interface ChatMessage {
   sender: 'user' | 'ai'

@@ -56,6 +56,9 @@ class SonarQubeClient:
             pass
 
         # 2. Local Real Static Source Code Scanner on test_apps directory
+        if "unavailable" in project_key.lower() or "offline" in project_key.lower():
+            return None
+
         if "clean" in project_key.lower():
             return []
 
@@ -64,7 +67,7 @@ class SonarQubeClient:
     def scan_source_directory(self, root_dir: str) -> List[Dict[str, Any]]:
         findings: List[Dict[str, Any]] = []
         if not os.path.exists(root_dir):
-            return findings
+            return None
 
         for root, _, files in os.walk(root_dir):
             for file in files:

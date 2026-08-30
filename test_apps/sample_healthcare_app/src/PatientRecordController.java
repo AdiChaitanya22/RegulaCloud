@@ -1,19 +1,19 @@
 package com.regulacloud.health.controllers;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 
 public class PatientRecordController {
 
     private Connection dbConnection;
 
     public String getPatientById(String patientAadhaarOrId) throws Exception {
-        // SECURITY FLAW: CWE-89 (SQL Injection)
-        // SonarQube Rule: javasecurity:S3649
-        Statement stmt = dbConnection.createStatement();
-        String query = "SELECT patient_id, full_name, medical_history FROM patients WHERE id = '" + patientAadhaarOrId + "'";
-        ResultSet rs = stmt.executeQuery(query);
+        // SECURE: Parameterized query eliminates SQL Injection (CWE-89 / S3649)
+        String query = "SELECT patient_id, full_name, medical_history FROM patients WHERE id = ?";
+        PreparedStatement ps = dbConnection.prepareStatement(query);
+        ps.setString(1, patientAadhaarOrId);
+        ResultSet rs = ps.executeQuery();
         
         if (rs.next()) {
             return rs.getString("full_name") + ": " + rs.getString("medical_history");

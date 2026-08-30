@@ -65,6 +65,14 @@ class QLearningRemediationAgent:
             "cost_penalty": 0,
             "complexity_penalty": 5,
             "hcl_diff": '// Replace raw String concatenation with PreparedStatement\n- String query = "SELECT * FROM users WHERE id = " + userId;\n+ PreparedStatement ps = conn.prepareStatement("SELECT * FROM users WHERE id = ?");\n+ ps.setString(1, userId);'
+        },
+        {
+            "id": "ACT_UPGRADE_WEAK_CRYPTO",
+            "name": "Upgrade Weak DES/3DES Cipher to Authenticated AES-256-GCM",
+            "target_control": "CTRL-SONAR-ZERO-CRITICAL",
+            "cost_penalty": 0,
+            "complexity_penalty": 4,
+            "hcl_diff": '// Replace legacy DES with AES-256-GCM authenticated cipher\n- SecretKeySpec key = new SecretKeySpec(keyBytes, "DES");\n- Cipher cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");\n+ SecretKeySpec key = new SecretKeySpec(keyBytes, "AES");\n+ Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");'
         }
     ]
 

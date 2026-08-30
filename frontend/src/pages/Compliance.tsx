@@ -1,27 +1,12 @@
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ShieldCheck,
   CheckCircle2,
-  AlertTriangle,
-  XCircle,
-  Clock,
-  ArrowRight,
   Shield,
-  Layers,
   FileCheck,
-  Cpu,
-  Database,
-  Search,
-  Lock,
-  FileCode,
   Info,
-  ChevronRight,
-  Radio,
-  Sparkles
+  ChevronRight
 } from 'lucide-react'
 import { Card } from '../components/ui/card'
-import { Badge } from '../components/ui/badge'
 import { complianceService } from '../services/complianceService'
 import type { ComplianceResult } from '../types'
 
@@ -49,11 +34,9 @@ export function CompliancePage() {
   const [selectedRegIndex, setSelectedRegIndex] = useState<number>(0)
   const [selectedReq, setSelectedReq] = useState<any | null>(null)
   const [activeTab, setActiveTab] = useState<'matrix' | 'overview'>('matrix')
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     async function loadData() {
-      setIsLoading(true)
       const [sumData, matrixData] = await Promise.all([
         complianceService.getComplianceScore(),
         complianceService.getTraceabilityMatrix()
@@ -65,7 +48,6 @@ export function CompliancePage() {
           setSelectedReq(matrixData[0].requirements[0])
         }
       }
-      setIsLoading(false)
     }
     loadData()
   }, [])
