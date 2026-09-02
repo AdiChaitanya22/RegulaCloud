@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   Activity,
@@ -17,72 +18,114 @@ import { ComplianceTrend } from '../components/charts/ComplianceTrend'
 import { SecuritySeverity } from '../components/charts/SecuritySeverity'
 import { DeploymentActivity } from '../components/charts/DeploymentActivity'
 import { ResourceDistribution } from '../components/charts/ResourceDistribution'
-
-const recentActivities = [
-  { id: 'act-1', event: 'Deployment successful', details: 'Healthcare Platform v1.2.4 deployed to AWS us-east-1.', time: '2m ago', type: 'success' },
-  { id: 'act-2', event: 'Security scan completed', details: 'OPA policy checking evaluated 184 guardrails: 0 findings.', time: '10m ago', type: 'scan' },
-  { id: 'act-3', event: 'AI analysis generated', details: 'Remediation diffuse generated for policy violation POL-001.', time: '12m ago', type: 'ai' },
-  { id: 'act-4', event: 'Report compiled', details: 'ISO 27001 ISMS Compliance Audit report saved to vault.', time: '1h ago', type: 'report' },
-  { id: 'act-5', event: 'Policy violation detected', details: 'Critical alarm on rds-postgres-01: publicly_accessible set to true.', time: '2h ago', type: 'alert' },
-]
+import { request } from '../services/api'
+import { complianceService } from '../services/complianceService'
 
 export function DashboardPage() {
-  const triggerScan = () => {
-    alert('Compliance scan triggered on AWS us-east-1. Indexing resources...')
+  const [stats, setStats] = useState<any>({
+    complianceScore: 95,
+    securityFindings: 0,
+    activeProjects: 2,
+    monitoredControls: 6,
+    deploymentsTotal: 1,
+    deploymentsSuccess: 1,
+    deploymentsBlocked: 0,
+    policyViolations: 0,
+    recentActivities: []
+  })
+  const [isScanning, setIsScanning] = useState(false)
+  const [scanMessage, setScanMessage] = useState<string | null>(null)
+
+  const loadStats = async () => {
+    const res = await request<any>('/dashboard/stats')
+    if (res.data) {
+      setStats(res.data)
+    }
+  }
+
+  useEffect(() => {
+    loadStats()
+  }, [])
+
+  const triggerScan = async () => {
+    setIsScanning(true)
+    setScanMessage('Executing deterministic compliance scan across project portfolio...')
+    try {
+      await complianceService.evaluateCompliance('proj-healthcare-india')
+      await loadStats()
+      setScanMessage('Compliance scan completed and metrics updated from live database.')
+      setTimeout(() => setScanMessage(null), 4000)
+    } catch (e) {
+      console.error('Scan error', e)
+      setScanMessage('Compliance scan failed.')
+    } finally {
+      setIsScanning(false)
+    }
   }
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm text-slate-400">Good evening</p>
+          <p className="text-sm text-slate-400">Continuous Regulatory Telemetry</p>
           <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white">Production Environment</h1>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={triggerScan}
+            disabled={isScanning}
+            className="inline-flex items-center gap-2 rounded-xl border border-[#1C2633] bg-[#111720] px-4 py-2.5 text-sm font-semibold text-slate-200 hover:bg-[#1C2633] transition disabled:opacity-50"
+          >
+            <RefreshCw size={16} className={`text-primary ${isScanning ? 'animate-spin' : ''}`} />
+            {isScanning ? 'Scanning...' : 'Trigger Scan'}
+          </button>
+          <a
+            href="/compliance"
             className="inline-flex items-center gap-2 rounded-xl border border-[#1C2633] bg-[#111720] px-4 py-2.5 text-sm font-semibold text-slate-200 hover:bg-[#1C2633] transition"
           >
-            <RefreshCw size={16} className="text-primary animate-spin" />
-            Trigger Scan
-          </button>
-          <button className="inline-flex items-center gap-2 rounded-xl border border-[#1C2633] bg-[#111720] px-4 py-2.5 text-sm font-semibold text-slate-200 hover:bg-[#1C2633] transition">
             <TrendingUp size={16} className="text-primary" />
-            Weekly Summary
-          </button>
+            Compliance Matrix
+          </a>
         </div>
       </div>
+
+      {scanMessage && (
+        <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 text-xs font-semibold text-primary animate-pulse flex items-center justify-between">
+          <span>{scanMessage}</span>
+          <button onClick={() => setScanMessage(null)} className="text-slate-400 hover:text-white">Dismiss</button>
+        </div>
+      )}
 
       {/* KPI Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <StatCard
           label="Compliance Score"
-          value={<AnimatedCounter value={94} suffix="%" />}
-          trend="+6% vs last month"
+          value={<AnimatedCounter value={Math.round(stats.complianceScore)} suffix="%" />}
+          trend={`${stats.activeProjects} Active Projects`}
           icon={<ShieldCheck size={16} />}
         />
         <StatCard
           label="Security Findings"
-          value={<AnimatedCounter value={37} />}
-          trend="3 Critical active"
+          value={<AnimatedCounter value={stats.securityFindings} />}
+          trend={`${stats.criticalFindings || 0} Critical / High`}
           icon={<ShieldAlert size={16} />}
         />
         <StatCard
-          label="Active Resources"
-          value={<AnimatedCounter value={52} />}
-          trend="All monitored"
+          label="Active Controls"
+          value={<AnimatedCounter value={stats.monitoredControls} />}
+          trend="Real OPA & Sonar"
           icon={<Activity size={16} />}
         />
         <StatCard
-          label="Deployments Today"
-          value={<AnimatedCounter value={14} />}
-          trend="98.2% success rate"
+          label="Total Deployments"
+          value={<AnimatedCounter value={stats.deploymentsTotal} />}
+          trend={`${stats.deploymentsSuccess} Success / ${stats.deploymentsBlocked} Blocked`}
           icon={<CheckCircle2 size={16} />}
         />
         <StatCard
           label="Policy Violations"
-          value={<AnimatedCounter value={3} />}
-          trend="2 auto-remediated"
+          value={<AnimatedCounter value={stats.policyViolations} />}
+          trend={stats.policyViolations === 0 ? 'Gate Passed' : 'Gated / Blocked'}
           icon={<ShieldAlert size={16} />}
         />
       </div>
@@ -167,7 +210,7 @@ export function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1C2633]/60">
-                {recentActivities.map((act) => (
+                {(stats.recentActivities || []).map((act: any) => (
                   <tr key={act.id} className="hover:bg-[#111720]/20 transition">
                     <td className="py-3.5 pr-4 font-semibold text-white">{act.event}</td>
                     <td className="py-3.5 pr-4 text-slate-400 text-xs">{act.details}</td>

@@ -4,7 +4,8 @@ from typing import Dict, Any, List
 from datetime import datetime
 import uuid
 from backend.app.core.database import get_db
-from backend.app.db.models import Deployment, Project, AuditLog
+from backend.app.core.auth import require_admin
+from backend.app.db.models import Deployment, Project, AuditLog, EvaluationRun, RequirementEvaluation, User
 from backend.app.engines.compliance_engine import ComplianceEngine
 
 router = APIRouter(prefix="/deployments", tags=["Deployments & Gating"])
@@ -119,7 +120,11 @@ def create_deployment_plan(payload: Dict[str, Any] = Body(...), db: Session = De
     }
 
 @router.post("/{deployment_id}/apply")
-def apply_deployment(deployment_id: str, db: Session = Depends(get_db)):
+def apply_deployment(
+    deployment_id: str,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
     deployment = db.query(Deployment).filter(Deployment.id == deployment_id).first()
     if not deployment:
         raise HTTPException(status_code=404, detail="Deployment not found")
@@ -127,10 +132,32 @@ def apply_deployment(deployment_id: str, db: Session = Depends(get_db)):
     if deployment.status == "BLOCKED":
         raise HTTPException(status_code=400, detail="Cannot apply a BLOCKED deployment. Non-compliant controls must be remediated.")
 
+    # Independent server-side verification of deterministic compliance evaluation run
+    if deployment.evaluation_run_id:
+        eval_run = db.query(EvaluationRun).filter(EvaluationRun.id == deployment.evaluation_run_id).first()
+        if not eval_run or eval_run.overall_status != "PASS" or eval_run.failed_count > 0 or eval_run.unknown_count > 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Deterministic compliance verification failed. Deployment gate prohibits rollout."
+            )
+        
+        # Verify no mandatory requirement evaluation in this run failed
+        failed_reqs = db.query(RequirementEvaluation).filter(
+            RequirementEvaluation.evaluation_run_id == eval_run.id,
+            RequirementEvaluation.status != "PASS",
+            RequirementEvaluation.status != "NOT_APPLICABLE"
+        ).all()
+        if failed_reqs:
+            raise HTTPException(
+                status_code=400,
+                detail="One or more statutory requirements are non-compliant or unverified."
+            )
+
     deployment.status = "SUCCESS"
+    deployment.applied_by = admin.username
     deployment.completed_at = datetime.utcnow()
     deployment.logs = (deployment.logs or []) + [
-        "[INFO] Administrator authorization verified.",
+        f"[INFO] Administrator authorization verified for user '{admin.username}' ({admin.role}).",
         "[INFO] Provisioning AWS Cloud resources in ap-south-1...",
         "[SUCCESS] Terraform state applied cleanly. Resources active.",
         "[INFO] Continuous drift detection monitors engaged."
@@ -139,12 +166,12 @@ def apply_deployment(deployment_id: str, db: Session = Depends(get_db)):
 
     AuditLog.create_entry(
         session=db,
-        actor="admin.operator",
+        actor=f"admin.{admin.username}",
         action="DEPLOYMENT_APPLIED_SUCCESS",
         resource_type="AWS_DEPLOYMENT",
         resource_id=deployment_id,
         severity="Low",
-        details={"applied_region": "ap-south-1", "status": "SUCCESS"}
+        details={"applied_region": "ap-south-1", "status": "SUCCESS", "authorized_by": admin.username}
     )
 
     return {

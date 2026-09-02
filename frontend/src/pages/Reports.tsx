@@ -78,6 +78,17 @@ export function ReportsPage() {
     setIsGenerating(false)
   }
 
+  const handleDownload = (reportId: string) => {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+    const downloadUrl = `${baseUrl.replace(/\/$/, '')}/reports/${reportId}/download`
+    const link = document.createElement('a')
+    link.href = downloadUrl
+    link.setAttribute('download', `regulacloud_audit_${reportId}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
@@ -166,7 +177,9 @@ export function ReportsPage() {
                   </div>
 
                   <button
+                    onClick={() => handleDownload(report.id)}
                     disabled={report.isGenerating}
+                    title="Download Audit Certificate (CSV)"
                     className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#1C2633] bg-[#111720] text-slate-400 hover:text-white hover:bg-[#1c2633] transition disabled:opacity-30"
                   >
                     <Download size={16} />

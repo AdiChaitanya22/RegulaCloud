@@ -44,26 +44,20 @@ export function SecurityScannerPage() {
     load()
   }, [])
 
-  const runScan = () => {
+  const runScan = async () => {
     if (isScanning) return
     setIsScanning(true)
-    setScanIndex(0)
-
-    const interval = setInterval(() => {
-      setScanIndex((prev) => {
-        if (prev >= scanSteps.length - 1) {
-          clearInterval(interval)
-          setIsScanning(false)
-          // Scan finished: update state to clean or remediate findings
-          securityService.scanSecurity('proj-healthcare').then((newFindings) => {
-            setFindings(newFindings)
-            setSelectedFinding(null)
-          })
-          return scanSteps.length
-        }
-        return prev + 1
-      })
-    }, 700)
+    setScanIndex(2)
+    try {
+      const newFindings = await securityService.scanSecurity('proj-healthcare-india')
+      setFindings(newFindings)
+      setSelectedFinding(null)
+      setScanIndex(scanSteps.length)
+    } catch (e) {
+      console.error('Scan error', e)
+    } finally {
+      setIsScanning(false)
+    }
   }
 
   const getSeverityBadge = (sev: SecurityFinding['severity']) => {

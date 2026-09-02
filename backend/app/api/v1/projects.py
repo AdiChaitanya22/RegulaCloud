@@ -4,7 +4,7 @@ from typing import List
 import uuid
 from backend.app.core.database import get_db
 from backend.app.db.models import Project
-from backend.app.schemas.projects import ProjectCreate, ProjectResponse
+from backend.app.schemas.projects import ProjectCreate, ProjectUpdate, ProjectResponse
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
@@ -37,6 +37,20 @@ def create_project(req: ProjectCreate, db: Session = Depends(get_db)):
         owner=req.owner
     )
     db.add(project)
+    db.commit()
+    db.refresh(project)
+    return project
+
+@router.put("/{project_id}", response_model=ProjectResponse)
+def update_project(project_id: str, req: ProjectUpdate, db: Session = Depends(get_db)):
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    update_data = req.model_dump(exclude_unset=True)
+    for field, val in update_data.items():
+        setattr(project, field, val)
+        
     db.commit()
     db.refresh(project)
     return project

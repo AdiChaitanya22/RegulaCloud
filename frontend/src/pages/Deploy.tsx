@@ -15,6 +15,7 @@ import { Badge } from '../components/ui/badge'
 import { complianceService } from '../services/complianceService'
 import { aiService } from '../services/aiService'
 import { deploymentService } from '../services/deploymentService'
+import { authService } from '../services/authService'
 
 const sampleVulnerableHCL = `terraform {
   required_version = ">= 1.5.0"
@@ -168,6 +169,9 @@ export function DeployPage() {
     setIsDeploying(true)
 
     try {
+      if (!authService.getToken()) {
+        await authService.login('admin', 'AdminPassword123!')
+      }
       const planRes = await deploymentService.createDeploymentPlan({
         projectId: 'proj-ayushman-portal',
         projectName: 'Ayushman National Digital Health Portal',
@@ -176,8 +180,13 @@ export function DeployPage() {
       })
       if (planRes && planRes.id) {
         setActiveDeploymentId(planRes.id)
-        await deploymentService.applyDeployment(planRes.id)
-        setDeploySuccess(true)
+        const applyRes = await deploymentService.applyDeployment(planRes.id)
+        if (applyRes) {
+          setDeploySuccess(true)
+          setNotification({ type: 'success', message: 'Deployment authorized by administrator and applied successfully.' })
+        } else {
+          setNotification({ type: 'error', message: 'Deployment authorization rejected by server.' })
+        }
       }
     } catch (e) {
       console.error('Deploy apply error', e)

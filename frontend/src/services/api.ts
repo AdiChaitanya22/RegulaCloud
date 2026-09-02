@@ -25,12 +25,16 @@ export async function request<T>(
   const controller = new AbortController()
   const id = setTimeout(() => controller.abort(), timeoutMs)
 
+  const token = localStorage.getItem('auth_token')
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...(options.headers as Record<string, string> || {}),
+  }
+
   const config: RequestInit = {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+    headers,
     signal: controller.signal,
   }
 

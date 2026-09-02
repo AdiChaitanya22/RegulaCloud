@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Bell,
@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { Card } from '../components/ui/card'
 import { Switch } from '../components/ui/switch'
+import { request } from '../services/api'
 
 export function SettingsPage() {
   // Input states
@@ -31,23 +32,42 @@ export function SettingsPage() {
   // Validation / Save feedback states
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [lastSaved, setLastSaved] = useState<any>(null)
 
-  const handleSave = (e: React.FormEvent) => {
+  const loadSettings = async () => {
+    const res = await request<any>('/settings')
+    if (res.data) {
+      const data = res.data
+      setAwsArn(data.awsArn || '')
+      setAzureTenant(data.azureTenant || '')
+      setSlackWebhook(data.slackWebhook || '')
+      setRulesPci(data.rulesPci ?? true)
+      setRulesSoc(data.rulesSoc ?? true)
+      setRulesHipaa(data.rulesHipaa ?? false)
+      setLastSaved(data)
+    }
+  }
+
+  useEffect(() => {
+    loadSettings()
+  }, [])
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    setErrors({})
     setSaveStatus('saving')
+    setErrors({})
 
     const newErrors: Record<string, string> = {}
 
     // 1. AWS ARN Validation
     const arnRegex = /^arn:aws:iam::[0-9]{12}:role\/[a-zA-Z0-9+=,.@\-_/]+$/
-    if (!arnRegex.test(awsArn)) {
+    if (awsArn && !arnRegex.test(awsArn)) {
       newErrors.awsArn = 'Invalid ARN pattern. Expected: arn:aws:iam::12digits:role/Name'
     }
 
     // 2. Azure Tenant ID validation (UUID)
     const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
-    if (!uuidRegex.test(azureTenant)) {
+    if (azureTenant && !uuidRegex.test(azureTenant)) {
       newErrors.azureTenant = 'Invalid tenant ID. Must match standard UUID format.'
     }
 
@@ -55,25 +75,53 @@ export function SettingsPage() {
       newErrors.slackWebhook = 'Webhook URL must be a valid HTTPS endpoint.'
     }
 
-    setTimeout(() => {
-      if (Object.keys(newErrors).length > 0) {
-        setErrors(newErrors)
-        setSaveStatus('error')
-      } else {
-        setSaveStatus('success')
-        // Automatically return to idle after 3 seconds
-        setTimeout(() => setSaveStatus('idle'), 3000)
-      }
-    }, 800)
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      setSaveStatus('error')
+      return
+    }
+
+    const payload = {
+      awsArn,
+      azureTenant,
+      slackWebhook,
+      rulesPci,
+      rulesSoc,
+      rulesHipaa,
+      scanIntervalHours: 1,
+      enforcementMode: 'FailClosed'
+    }
+
+    const res = await request('/settings', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    })
+
+    if (res.data) {
+      setLastSaved(payload)
+      setSaveStatus('success')
+      setTimeout(() => setSaveStatus('idle'), 3000)
+    } else {
+      setSaveStatus('error')
+    }
   }
 
   const handleDiscard = () => {
-    setAwsArn('arn:aws:iam::123456789012:role/ReguCloudCrossAccount')
-    setAzureTenant('4fa38c92-38ef-4122-8321-75bf22e391aa')
-    setSlackWebhook('https://example.com/slack-webhook')
-    setRulesPci(true)
-    setRulesSoc(true)
-    setRulesHipaa(false)
+    if (lastSaved) {
+      setAwsArn(lastSaved.awsArn || '')
+      setAzureTenant(lastSaved.azureTenant || '')
+      setSlackWebhook(lastSaved.slackWebhook || '')
+      setRulesPci(lastSaved.rulesPci ?? true)
+      setRulesSoc(lastSaved.rulesSoc ?? true)
+      setRulesHipaa(lastSaved.rulesHipaa ?? false)
+    } else {
+      setAwsArn('arn:aws:iam::123456789012:role/ReguCloudCrossAccount')
+      setAzureTenant('4fa38c92-38ef-4122-8321-75bf22e391aa')
+      setSlackWebhook('https://example.com/slack-webhook')
+      setRulesPci(true)
+      setRulesSoc(true)
+      setRulesHipaa(false)
+    }
     setErrors({})
     setSaveStatus('idle')
   }

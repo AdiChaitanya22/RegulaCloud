@@ -16,6 +16,18 @@ class ProjectBase(BaseModel):
 class ProjectCreate(ProjectBase):
     id: Optional[str] = None
 
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = None
+    organization: Optional[str] = None
+    sector: Optional[str] = None
+    jurisdiction: Optional[str] = None
+    data_categories: Optional[List[str]] = None
+    environment: Optional[str] = None
+    cloud_provider: Optional[str] = None
+    aws_region: Optional[str] = None
+    owner: Optional[str] = None
+    status: Optional[str] = None
+
 class ProjectResponse(ProjectBase):
     id: str
     compliance_score: float

@@ -5,6 +5,17 @@ from sqlalchemy import Column, String, Text, Boolean, Integer, Float, DateTime, 
 from sqlalchemy.orm import relationship
 from backend.app.core.database import Base
 
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(String(64), primary_key=True, index=True)
+    username = Column(String(64), unique=True, index=True, nullable=False)
+    email = Column(String(128), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+    role = Column(String(32), nullable=False, default="USER") # ADMIN, USER, AUDITOR
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 class Regulation(Base):
     __tablename__ = "regulations"
 
@@ -190,3 +201,28 @@ class AuditLog(Base):
         session.add(log)
         session.commit()
         return log
+
+
+class ComplianceReport(Base):
+    __tablename__ = "compliance_reports"
+
+    id = Column(String(64), primary_key=True, index=True)
+    title = Column(String(255), nullable=False)
+    project_id = Column(String(64), ForeignKey("projects.id"), nullable=True)
+    evaluation_run_id = Column(String(64), ForeignKey("evaluation_runs.id"), nullable=True)
+    status = Column(String(32), default="Ready") # Ready, Generating, Archived
+    grade = Column(String(8), default="A")
+    score = Column(String(16), default="100.0%")
+    desc = Column(Text, nullable=True)
+    report_data = Column(JSON, nullable=True)
+    evidence_hash = Column(String(64), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class SystemSetting(Base):
+    __tablename__ = "system_settings"
+
+    key = Column(String(64), primary_key=True, index=True)
+    value = Column(JSON, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+

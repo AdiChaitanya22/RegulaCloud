@@ -132,10 +132,10 @@ const initialNodes: TopologyNode[] = [
 ]
 
 const metrics = [
-  { label: 'Availability', value: '99.98%', icon: Activity },
-  { label: 'Latency', value: '142 ms', icon: GitBranch },
-  { label: 'Policy coverage', value: '94%', icon: ShieldCheck },
-  { label: 'Monitored Assets', value: '52 active', icon: Users },
+  { label: 'Policy Engine', value: 'OPA Rego Active', icon: Activity },
+  { label: 'Cloud Region', value: 'AWS ap-south-1', icon: GitBranch },
+  { label: 'Evaluation Gating', value: 'Fail-Closed', icon: ShieldCheck },
+  { label: 'Monitored Assets', value: 'Terraform Plan', icon: Users },
 ]
 
 export function InfrastructurePage() {

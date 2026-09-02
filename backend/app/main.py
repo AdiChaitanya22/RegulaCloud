@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.app.core.config import settings
 from backend.app.db.init_db import init_database
 from backend.app.api.v1 import (
+    auth,
+    dashboard,
     applicability,
     compliance,
     policies,
@@ -13,6 +15,7 @@ from backend.app.api.v1 import (
     terraform_opa,
     audit,
     reports,
+    settings as settings_api,
     drift,
     ai_copilot
 )
@@ -53,6 +56,8 @@ def health_check():
     return {"status": "healthy", "service": "RegulaCloud API Gateway"}
 
 # Register v1 API Routers
+app.include_router(auth.router, prefix=settings.API_V1_STR)
+app.include_router(dashboard.router, prefix=settings.API_V1_STR)
 app.include_router(compliance.router, prefix=settings.API_V1_STR)
 app.include_router(applicability.router, prefix=settings.API_V1_STR)
 app.include_router(policies.router, prefix=settings.API_V1_STR)
@@ -63,5 +68,6 @@ app.include_router(deployments.router, prefix=settings.API_V1_STR)
 app.include_router(terraform_opa.router, prefix=settings.API_V1_STR)
 app.include_router(audit.router, prefix=settings.API_V1_STR)
 app.include_router(reports.router, prefix=settings.API_V1_STR)
+app.include_router(settings_api.router, prefix=settings.API_V1_STR)
 app.include_router(drift.router, prefix=settings.API_V1_STR)
 app.include_router(ai_copilot.router, prefix=settings.API_V1_STR)

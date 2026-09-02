@@ -2,7 +2,9 @@ import json
 import os
 from sqlalchemy.orm import Session
 from backend.app.core.database import Base, engine, SessionLocal
+from backend.app.core.security import hash_password
 from backend.app.db.models import (
+    User,
     Regulation,
     RegulatoryRequirement,
     TechnicalControl,
@@ -17,6 +19,29 @@ def init_database():
     Base.metadata.create_all(bind=engine)
     db: Session = SessionLocal()
     try:
+        # Check if users already seeded
+        if db.query(User).count() == 0:
+            print("[INFO] Seeding default platform users (admin, operator)...")
+            admin_user = User(
+                id="usr-admin-01",
+                username="admin",
+                email="admin@regulacloud.gov.in",
+                hashed_password=hash_password("AdminPassword123!"),
+                role="ADMIN",
+                is_active=True
+            )
+            op_user = User(
+                id="usr-operator-02",
+                username="operator",
+                email="operator@regulacloud.gov.in",
+                hashed_password=hash_password("UserPassword123!"),
+                role="USER",
+                is_active=True
+            )
+            db.add(admin_user)
+            db.add(op_user)
+            db.commit()
+
         # Check if regulations already seeded
         if db.query(Regulation).count() == 0:
             print("[INFO] Seeding Regulatory Knowledge Base...")
