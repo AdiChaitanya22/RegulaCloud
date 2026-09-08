@@ -4,9 +4,23 @@ import base64
 import json
 import time
 import os
+import warnings
 from typing import Dict, Any, Optional
 
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "regulacloud-enterprise-auth-secret-key-2026-secure")
+_DEV_ONLY_FALLBACK_SECRET = "DEV-ONLY-insecure-key-do-not-use-in-production"
+
+_env_secret = os.getenv("JWT_SECRET_KEY", "")
+if _env_secret:
+    SECRET_KEY = _env_secret
+else:
+    warnings.warn(
+        "JWT_SECRET_KEY environment variable is not set. "
+        "Using INSECURE development-only fallback. "
+        "Set JWT_SECRET_KEY in production.",
+        stacklevel=2
+    )
+    SECRET_KEY = _DEV_ONLY_FALLBACK_SECRET
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_SECONDS = 60 * 60 * 24 # 24 hours
 

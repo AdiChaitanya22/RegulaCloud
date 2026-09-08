@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 from backend.app.core.database import get_db
+from backend.app.core.auth import require_user
 from backend.app.schemas.ai import AIChatRequest, AIChatResponse, DeterministicStateSnapshot
 from backend.app.engines.rag_engine import RAGEngine
 from backend.app.engines.guardrails import GuardrailEngine, LEGAL_DISCLAIMER
 from backend.app.engines.llm_client import LLMClient
-from backend.app.db.models import AuditLog
+from backend.app.db.models import AuditLog, User
 
 router = APIRouter(prefix="/ai", tags=["Grounded AI Copilot"])
 
@@ -14,6 +15,7 @@ llm_client = LLMClient()
 @router.post("/chat", response_model=AIChatResponse)
 def chat_with_copilot(
     req: AIChatRequest = Body(...),
+    current_user: User = Depends(require_user),
     db: Session = Depends(get_db)
 ):
     try:

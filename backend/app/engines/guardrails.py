@@ -114,7 +114,7 @@ class GuardrailEngine:
                 f"**Cryptographic Evidence Hash**: `{context.evidence_hash}`\n\n"
                 f"**OPA Rego Plan Inspection Results**:\n{opa_lines}\n\n"
                 f"**Static Application Security (SonarQube) Findings**:\n{sonar_lines}\n\n"
-                f"*All evidence hashes are immutably signed into the PostgreSQL audit ledger.*"
+                f"*All evidence hashes are immutably signed into the audit ledger.*"
             )
 
         # 3. Technical Controls Inquiry

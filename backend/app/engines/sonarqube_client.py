@@ -91,7 +91,7 @@ class SonarQubeClient:
                                 "rule": "javasecurity:S3649",
                                 "cwe": "CWE-89",
                                 "status": "OPEN",
-                                "verification_source": "SONARQUBE"
+                                "verification_source": "LOCAL_STATIC_FALLBACK"
                             })
 
                         # Pattern 2: Weak Crypto DES / 3DES (CWE-327)
@@ -107,7 +107,7 @@ class SonarQubeClient:
                                 "rule": "javasecurity:S5542",
                                 "cwe": "CWE-327",
                                 "status": "OPEN",
-                                "verification_source": "SONARQUBE"
+                                "verification_source": "LOCAL_STATIC_FALLBACK"
                             })
 
         return findings

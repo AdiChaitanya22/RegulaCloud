@@ -4,14 +4,14 @@ from typing import Dict, Any, List
 from datetime import datetime
 import uuid
 from backend.app.core.database import get_db
-from backend.app.core.auth import require_admin
+from backend.app.core.auth import require_admin, require_user
 from backend.app.db.models import Deployment, Project, AuditLog, EvaluationRun, RequirementEvaluation, User
 from backend.app.engines.compliance_engine import ComplianceEngine
 
 router = APIRouter(prefix="/deployments", tags=["Deployments & Gating"])
 
 @router.get("")
-def list_deployments(db: Session = Depends(get_db)):
+def list_deployments(current_user: User = Depends(require_user), db: Session = Depends(get_db)):
     deployments = db.query(Deployment).order_by(Deployment.started_at.desc()).all()
     if not deployments:
         return [
@@ -46,7 +46,7 @@ def list_deployments(db: Session = Depends(get_db)):
     return deployments
 
 @router.post("/plan")
-def create_deployment_plan(payload: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def create_deployment_plan(payload: Dict[str, Any] = Body(...), current_user: User = Depends(require_user), db: Session = Depends(get_db)):
     project_id = payload.get("projectId", "proj-healthcare-india")
     hcl_code = payload.get("hcl_code", "")
 

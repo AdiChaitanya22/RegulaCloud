@@ -1,5 +1,6 @@
 import hashlib
 import json
+from datetime import datetime, timezone
 from typing import Dict, Any, List
 from sqlalchemy.orm import Session
 from backend.app.db.models import (
@@ -191,7 +192,7 @@ class ComplianceEngine:
             "unknown": unknown_count,
             "opa_violations_count": len(opa_violations),
             "sonar_findings_count": len(sonar_findings) if sonar_findings is not None else 0,
-            "timestamp": "2026-08-29T18:00:00Z"
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
         evidence_hash = hashlib.sha256(json.dumps(evidence_payload, sort_keys=True).encode()).hexdigest()
 
