@@ -7,19 +7,10 @@ import os
 import warnings
 from typing import Dict, Any, Optional
 
-_DEV_ONLY_FALLBACK_SECRET = "DEV-ONLY-insecure-key-do-not-use-in-production"
-
 _env_secret = os.getenv("JWT_SECRET_KEY", "")
-if _env_secret:
-    SECRET_KEY = _env_secret
-else:
-    warnings.warn(
-        "JWT_SECRET_KEY environment variable is not set. "
-        "Using INSECURE development-only fallback. "
-        "Set JWT_SECRET_KEY in production.",
-        stacklevel=2
-    )
-    SECRET_KEY = _DEV_ONLY_FALLBACK_SECRET
+if not _env_secret:
+    raise ValueError("FATAL CONFIGURATION ERROR: JWT_SECRET_KEY environment variable is missing. It MUST be set in all environments.")
+SECRET_KEY = _env_secret
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_SECONDS = 60 * 60 * 24 # 24 hours

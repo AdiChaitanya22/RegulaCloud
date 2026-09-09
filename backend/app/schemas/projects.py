@@ -12,6 +12,8 @@ class ProjectBase(BaseModel):
     cloud_provider: str = "AWS"
     aws_region: str = "ap-south-1"
     owner: str = "admin@regulacloud.gov.in"
+    regulatory_scope: Optional[List[str]] = None
+    hcl_content: Optional[str] = None
 
 class ProjectCreate(ProjectBase):
     id: Optional[str] = None
@@ -27,6 +29,8 @@ class ProjectUpdate(BaseModel):
     aws_region: Optional[str] = None
     owner: Optional[str] = None
     status: Optional[str] = None
+    regulatory_scope: Optional[List[str]] = None
+    hcl_content: Optional[str] = None
 
 class ProjectResponse(ProjectBase):
     id: str

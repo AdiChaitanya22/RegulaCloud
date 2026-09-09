@@ -63,19 +63,40 @@ def list_reports(db: Session = Depends(get_db)):
 def generate_report(payload: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
     title = payload.get("title", "Statutory Compliance Audit Certificate")
     project_id = payload.get("projectId", "proj-healthcare-india")
-    
-    # Retrieve project and latest evaluation run to ground report in actual evidence
+    evaluation_run_id_param = payload.get("evaluation_run_id")
+
+    # Guard: project must exist before we touch anything else
     project = db.query(Project).filter(Project.id == project_id).first()
-    latest_run = db.query(EvaluationRun).filter(
-        EvaluationRun.project_id == project_id
-    ).order_by(EvaluationRun.evaluated_at.desc()).first()
-    
-    score_float = latest_run.compliance_score if latest_run else (project.compliance_score if project else 100.0)
+    if not project:
+        raise HTTPException(status_code=404, detail=f"Project '{project_id}' not found.")
+
+    # Resolve evaluation run: explicit selection or fallback to latest
+    if evaluation_run_id_param:
+        eval_run = db.query(EvaluationRun).filter(
+            EvaluationRun.id == evaluation_run_id_param
+        ).first()
+        if not eval_run:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Evaluation run '{evaluation_run_id_param}' not found."
+            )
+        if eval_run.project_id != project_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Evaluation run does not belong to the requested project."
+            )
+        latest_run = eval_run
+    else:
+        latest_run = db.query(EvaluationRun).filter(
+            EvaluationRun.project_id == project_id
+        ).order_by(EvaluationRun.evaluated_at.desc()).first()
+
+    score_float = latest_run.compliance_score if latest_run else project.compliance_score or 100.0
     score_str = f"{score_float:.1f}%"
     grade = "A" if score_float >= 90.0 else ("B" if score_float >= 80.0 else ("C" if score_float >= 70.0 else "F"))
     evidence_hash = latest_run.evidence_hash if latest_run else "0" * 64
-    
-    rep_id = f"rep-{int(datetime.utcnow().timestamp())}"
+
+    rep_id = f"rep-{uuid.uuid4().hex[:8]}"
     report = ComplianceReport(
         id=rep_id,
         title=title,
@@ -84,11 +105,11 @@ def generate_report(payload: Dict[str, Any] = Body(...), db: Session = Depends(g
         status="Ready",
         grade=grade,
         score=score_str,
-        desc=payload.get("desc", f"Verifiable regulatory compliance verification certificate for project '{project.name if project else project_id}'."),
+        desc=payload.get("desc", f"Verifiable regulatory compliance verification certificate for project '{project.name}'."),
         evidence_hash=evidence_hash
     )
     db.add(report)
-    
+
     AuditLog.create_entry(
         session=db,
         actor="auditor.compliance_officer",
@@ -132,19 +153,46 @@ def download_report(report_id: str, db: Session = Depends(get_db)):
         "Requirement ID,Title,Status,Reason,Evidence Source"
     ]
     
-    if report.evaluation_run_id:
-        req_evals = db.query(RequirementEvaluation).filter(
-            RequirementEvaluation.evaluation_run_id == report.evaluation_run_id
-        ).all()
-        for re_item in req_evals:
-            clean_title = re_item.requirement.title.replace(",", ";") if re_item.requirement else ""
-            clean_reason = (re_item.reason or "Satisfied").replace(",", ";")
-            src = "OPA Rego & SonarQube"
-            lines.append(f'"{re_item.requirement_id}","{clean_title}","{re_item.status}","{clean_reason}","{src}"')
+    if not report.evaluation_run_id:
+        raise HTTPException(status_code=400, detail="No compliance evaluation evidence exists to back this report.")
+
+    eval_run = db.query(EvaluationRun).filter(EvaluationRun.id == report.evaluation_run_id).first()
+    if not eval_run:
+        raise HTTPException(status_code=400, detail="Evaluation run evidence not found.")
+        
+    req_evals = db.query(RequirementEvaluation).filter(
+        RequirementEvaluation.evaluation_run_id == report.evaluation_run_id
+    ).all()
+    
+    for re_item in req_evals:
+        clean_title = re_item.requirement.title.replace(",", ";") if re_item.requirement else ""
+        clean_reason = (re_item.reason or "Satisfied").replace(",", ";")
+        src = "OPA Rego & SonarQube"
+        lines.append(f'"{re_item.requirement_id}","{clean_title}","{re_item.status}","{clean_reason}","{src}"')
+
+    # Append true OPA & SonarQube telemetry
+    evidence = eval_run.evidence_payload or {}
+    
+    lines.append("")
+    lines.append("OPA_VIOLATION,Description")
+    opa_violations = evidence.get("opa_violations", [])
+    if opa_violations:
+        for v in opa_violations:
+            desc = v.get("description", "").replace(",", ";")
+            lines.append(f'"OPA_REGO","{desc}"')
     else:
-        lines.append('"DPDP-2023-SEC8.5","Encryption and Safeguards","PASS","Satisfied via KMS envelope encryption","OPA_TERRAFORM"')
-        lines.append('"CERTIN-2022-LOG-RETENTION","180-Day Rolling Log Retention","PASS","CloudWatch retention set >= 180 days","OPA_TERRAFORM"')
-        lines.append('"DPDPR-2025-R8.3","Application Security Code Quality","PASS","0 Critical CWE SQLi / Weak Crypto findings","SONARQUBE"')
+        lines.append('"OPA_REGO","No violations detected or telemetry unavailable"')
+        
+    lines.append("")
+    lines.append("SONAR_FINDING,Severity,Message")
+    sonar_findings = evidence.get("sonar_findings", [])
+    if sonar_findings:
+        for s in sonar_findings:
+            msg = s.get("message", "").replace(",", ";")
+            sev = s.get("severity", "UNKNOWN")
+            lines.append(f'"SONARQUBE","{sev}","{msg}"')
+    else:
+        lines.append('"SONARQUBE","N/A","No findings or telemetry unavailable"')
 
     csv_content = "\n".join(lines)
     return Response(

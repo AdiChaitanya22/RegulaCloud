@@ -33,6 +33,11 @@ export function ProjectsPage() {
   const [newProvider, setNewProvider] = useState<CloudProvider>('AWS')
   const [newRegion, setNewRegion] = useState('')
   const [newOwner, setNewOwner] = useState('')
+  const [newRegScope, setNewRegScope] = useState<string[]>([])
+  const [infraFile, setInfraFile] = useState<File | null>(null)
+  const [infraHcl, setInfraHcl] = useState('')
+  const [appFile, setAppFile] = useState<File | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
 
   // Details Drawer State
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
@@ -52,23 +57,44 @@ export function ProjectsPage() {
     e.preventDefault()
     if (!newName || !newRegion || !newOwner) return
 
-    const newProj = await projectService.createProject({
-      name: newName,
-      cloudProvider: newProvider,
-      region: newRegion,
-      complianceScore: 100, // New projects start clean
-      lastDeployment: 'Never deployed',
-      status: 'Protected',
-      owner: newOwner,
-    })
+    setIsCreating(true)
+    try {
+      const newProj = await projectService.createProject({
+        name: newName,
+        cloudProvider: newProvider,
+        region: newRegion,
+        complianceScore: 100, // New projects start clean
+        lastDeployment: 'Never deployed',
+        status: 'Protected',
+        owner: newOwner,
+      })
 
-    setProjects((prev) => [...prev, newProj])
-    setIsCreateOpen(false)
+      if (newRegScope.length > 0) {
+        await projectService.updateProject(newProj.id, { regulatory_scope: newRegScope })
+      }
 
-    // Reset Form
-    setNewName('')
-    setNewRegion('')
-    setNewOwner('')
+      if (infraFile || infraHcl) {
+        await projectService.uploadInfrastructure(newProj.id, infraFile || undefined, infraHcl)
+      }
+
+      if (appFile) {
+        await projectService.uploadApplication(newProj.id, appFile)
+      }
+
+      setProjects((prev) => [...prev, newProj])
+      setIsCreateOpen(false)
+
+      // Reset Form
+      setNewName('')
+      setNewRegion('')
+      setNewOwner('')
+      setNewRegScope([])
+      setInfraFile(null)
+      setInfraHcl('')
+      setAppFile(null)
+    } finally {
+      setIsCreating(false)
+    }
   }
 
   const handleDelete = async (id: string) => {
@@ -279,11 +305,50 @@ export function ProjectsPage() {
               />
             </div>
 
+            <div>
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Regulatory Scope</label>
+              <Select
+                value={newRegScope[0] || ''}
+                onChange={(val) => setNewRegScope([val])}
+                options={[
+                  { label: 'None', value: '' },
+                  { label: 'DPDPA 2023', value: 'DPDPA-2023' },
+                  { label: 'DPDP Rules 2025', value: 'DPDPR-2025' },
+                  { label: 'CERT-In Directions 2022', value: 'CERTIN-2022' },
+                ]}
+              />
+            </div>
+
+            <div className="border-t border-[#1C2633] pt-4 mt-4">
+              <h3 className="text-sm font-bold text-white mb-3">Workload Artifacts (Optional)</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1">Infrastructure (Terraform .tf or .zip)</label>
+                  <input type="file" onChange={(e) => setInfraFile(e.target.files?.[0] || null)} className="text-xs text-slate-400 mb-2 w-full" accept=".tf,.zip" />
+                  <span className="block text-[10px] text-slate-500 mb-1">OR paste HCL code:</span>
+                  <textarea
+                    value={infraHcl}
+                    onChange={(e) => setInfraHcl(e.target.value)}
+                    placeholder="paste terraform code here..."
+                    rows={3}
+                    className="w-full rounded-xl border border-[#1C2633] bg-[#111720] px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-primary"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1">Application Source (.zip)</label>
+                  <input type="file" onChange={(e) => setAppFile(e.target.files?.[0] || null)} className="text-xs text-slate-400 w-full" accept=".zip" />
+                </div>
+              </div>
+            </div>
+
             <button
               type="submit"
-              className="w-full rounded-xl bg-primary hover:bg-blue-600 py-3 text-sm font-bold text-white transition mt-2"
+              disabled={isCreating}
+              className="w-full rounded-xl bg-primary hover:bg-blue-600 py-3 text-sm font-bold text-white transition mt-2 disabled:opacity-50"
             >
-              Create Project
+              {isCreating ? 'Creating & Uploading...' : 'Create Project'}
             </button>
           </form>
         </DialogContent>

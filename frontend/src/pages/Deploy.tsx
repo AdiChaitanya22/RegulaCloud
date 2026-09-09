@@ -15,7 +15,7 @@ import { Badge } from '../components/ui/badge'
 import { complianceService } from '../services/complianceService'
 import { aiService } from '../services/aiService'
 import { deploymentService } from '../services/deploymentService'
-import { authService } from '../services/authService'
+import { projectService } from '../services/projectService'
 
 const sampleVulnerableHCL = `terraform {
   required_version = ">= 1.5.0"
@@ -110,7 +110,20 @@ export function DeployPage() {
 
   // Run initial evaluation on mount
   useEffect(() => {
-    runEvaluation(sampleVulnerableHCL)
+    const initHcl = async () => {
+      try {
+        const storedHcl = await projectService.getProjectHcl('proj-ayushman-portal')
+        if (storedHcl && storedHcl.trim().length > 0) {
+          setHclCode(storedHcl)
+          runEvaluation(storedHcl)
+        } else {
+          runEvaluation(sampleVulnerableHCL)
+        }
+      } catch (err) {
+        runEvaluation(sampleVulnerableHCL)
+      }
+    }
+    initHcl()
   }, [])
 
   const runEvaluation = async (codeToEval: string) => {
@@ -147,18 +160,35 @@ export function DeployPage() {
     setIsApplyingRL(true)
     setNotification({ type: 'info', message: 'Applying RL-optimized remediation actions to HCL & code baselines...' })
     try {
-      setHclCode(sampleCompliantHCL)
-      const res = await complianceService.evaluateCompliance('proj-ayushman-portal', sampleCompliantHCL)
-      setEvalResult(res)
-      if (res && res.deployment_allowed) {
-        setRlRecommendations(null)
-        setNotification({ type: 'success', message: 'RL remediation applied successfully! Deterministic gate verified 100% compliance.' })
+      if (!rlRecommendations || rlRecommendations.length === 0) {
+        setNotification({ type: 'error', message: 'No RL recommendations available to apply.' })
+        return
+      }
+
+      const actionIds = rlRecommendations.map((r: any) => r.action_id)
+      const result = await projectService.applyRemediations('proj-ayushman-portal', actionIds)
+
+      if (result.success && result.hcl_code) {
+        setHclCode(result.hcl_code)
+        
+        // Build success message
+        let msg = 'Remediation applied!'
+        if (result.applied_actions && result.applied_actions.length > 0) {
+          msg += ` Applied: ${result.applied_actions.length} action(s).`
+        }
+        if (result.skipped_actions && result.skipped_actions.length > 0) {
+          msg += ` Skipped: ${result.skipped_actions.length} action(s) (requires manual code update).`
+        }
+        setNotification({ type: 'success', message: msg })
+
+        // Re-evaluate immediately with new HCL
+        runEvaluation(result.hcl_code)
       } else {
-        setNotification({ type: 'error', message: 'Remediation applied, but one or more mandatory controls remain non-compliant.' })
+        setNotification({ type: 'error', message: result.message || 'Remediation failed.' })
       }
     } catch (e) {
       console.error('RL remediation error', e)
-      setNotification({ type: 'error', message: 'Failed to evaluate compliance after remediation.' })
+      setNotification({ type: 'error', message: 'Failed to apply remediation via API.' })
     } finally {
       setIsApplyingRL(false)
     }
@@ -169,9 +199,7 @@ export function DeployPage() {
     setIsDeploying(true)
 
     try {
-      if (!authService.getToken()) {
-        await authService.login('admin', 'AdminPassword123!')
-      }
+      // Use the existing authenticated user's token — no credential injection
       const planRes = await deploymentService.createDeploymentPlan({
         projectId: 'proj-ayushman-portal',
         projectName: 'Ayushman National Digital Health Portal',
@@ -183,14 +211,29 @@ export function DeployPage() {
         const applyRes = await deploymentService.applyDeployment(planRes.id)
         if (applyRes) {
           setDeploySuccess(true)
-          setNotification({ type: 'success', message: 'Deployment authorized by administrator and applied successfully.' })
+          setNotification({ type: 'success', message: 'Deployment authorized and applied successfully.' })
         } else {
           setNotification({ type: 'error', message: 'Deployment authorization rejected by server.' })
         }
+      } else {
+        setNotification({ type: 'error', message: 'Failed to create deployment plan.' })
       }
-    } catch (e) {
-      console.error('Deploy apply error', e)
-      setNotification({ type: 'error', message: 'Cloud rollout deployment failed.' })
+    } catch (e: any) {
+      // Surface RBAC/auth errors clearly — never elevate credentials
+      const status = e?.status ?? e?.response?.status
+      if (status === 403) {
+        setNotification({
+          type: 'error',
+          message: 'Authorization denied. Deployment Apply requires ADMIN role. Your account does not have this permission.',
+        })
+      } else if (status === 401) {
+        setNotification({
+          type: 'error',
+          message: 'Session expired. Please sign in again.',
+        })
+      } else {
+        setNotification({ type: 'error', message: 'Cloud rollout deployment failed. Please try again.' })
+      }
     } finally {
       setIsDeploying(false)
     }

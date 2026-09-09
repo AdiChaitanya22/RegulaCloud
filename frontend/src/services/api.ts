@@ -20,6 +20,7 @@ export function isBackendAvailable() {
 export async function request<T>(
   endpoint: string,
   options: RequestInit = {},
+  isFormData: boolean = false,
   timeoutMs = 8000
 ): Promise<APIResponse<T>> {
   const controller = new AbortController()
@@ -27,9 +28,12 @@ export async function request<T>(
 
   const token = localStorage.getItem('auth_token')
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     ...(options.headers as Record<string, string> || {}),
+  }
+  
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json'
   }
 
   const config: RequestInit = {

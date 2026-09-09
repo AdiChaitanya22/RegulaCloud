@@ -29,7 +29,7 @@ export const authService = {
     localStorage.removeItem('auth_token')
   },
 
-  async login(username = 'admin', password = 'AdminPassword123!'): Promise<AuthResponse | null> {
+  async login(username: string, password: string): Promise<AuthResponse | null> {
     const res = await request<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ username, password })
@@ -41,11 +41,13 @@ export const authService = {
     return null
   },
 
-  async getCurrentUser(): Promise<UserProfile | null> {
+  async getCurrentUser(): Promise<UserProfile> {
     const res = await request<UserProfile>('/auth/me')
     if (res.data) {
       return res.data
     }
-    return null
+    // Token missing/expired — signal failure to caller
+    throw new Error(`Auth check failed: ${res.status}`)
   }
 }
+

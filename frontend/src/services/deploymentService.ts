@@ -57,6 +57,12 @@ export const deploymentService = {
     if (response.data) {
       return response.data
     }
+    // Surface auth errors — do not fall through to mock
+    if (response.status === 401 || response.status === 403) {
+      const err: any = new Error(response.error || 'Not authorized')
+      err.status = response.status
+      throw err
+    }
     const newPlan: Deployment = {
       id: `dep-${Date.now()}`,
       projectId: plan.projectId || 'proj-custom',
@@ -86,6 +92,12 @@ export const deploymentService = {
     })
     if (response.data) {
       return response.data
+    }
+    // Surface auth errors — do not fall through to mock
+    if (response.status === 401 || response.status === 403) {
+      const err: any = new Error(response.error || 'Not authorized')
+      err.status = response.status
+      throw err
     }
     const idx = mockDeployments.findIndex((d) => d.id === id)
     if (idx !== -1) {

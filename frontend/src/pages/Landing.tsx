@@ -280,7 +280,7 @@ export function LandingPage() {
             </div>
             <div className="flex items-center gap-3">
               <Link 
-                to="/dashboard" 
+                to="/login" 
                 className="rounded-xl border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold transition duration-200 btn-signin"
               >
                 Sign in

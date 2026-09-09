@@ -11,6 +11,7 @@ export interface Project {
   lastDeployment: string
   status: 'Protected' | 'Review' | 'At Risk'
   owner: string
+  regulatory_scope?: string[]
 }
 
 export interface DeploymentStage {

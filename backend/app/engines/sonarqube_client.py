@@ -18,7 +18,7 @@ class SonarQubeClient:
         self.base_url = (base_url or settings.SONARQUBE_URL).rstrip("/")
         self.token = token or settings.SONARQUBE_TOKEN
 
-    def fetch_project_findings(self, project_key: str) -> List[Dict[str, Any]]:
+    def fetch_project_findings(self, project_key: str, application_source_path: str = None) -> List[Dict[str, Any]]:
         """
         Queries SonarQube REST API or performs static analysis scan on target source tree.
         """
@@ -55,14 +55,15 @@ class SonarQubeClient:
         except Exception:
             pass
 
-        # 2. Local Real Static Source Code Scanner on test_apps directory
+        # 2. Local Real Static Source Code Scanner on test_apps directory or provided application_source_path
         if "unavailable" in project_key.lower() or "offline" in project_key.lower():
             return None
 
         if "clean" in project_key.lower():
             return []
 
-        return self.scan_source_directory(self.SAMPLE_APPS_DIR)
+        scan_dir = application_source_path if application_source_path and os.path.exists(application_source_path) else self.SAMPLE_APPS_DIR
+        return self.scan_source_directory(scan_dir)
 
     def scan_source_directory(self, root_dir: str) -> List[Dict[str, Any]]:
         findings: List[Dict[str, Any]] = []

@@ -6,18 +6,19 @@ import {
   FileText,
   LayoutGrid,
   Lock,
+  LogOut,
   Rocket,
   Settings,
   ShieldCheck,
   Sparkles,
-  UserCircle2,
   Bell,
   Search,
   X,
 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { CommandPalette } from '../ui/command-palette'
+import { useAuth } from '../../context/AuthContext'
 
 interface AppShellProps {
   children: ReactNode
@@ -38,6 +39,8 @@ const navigation = [
 ]
 
 export function AppShell({ children }: AppShellProps) {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const [showNotifications, setShowNotifications] = useState(false)
   const [notifications, setNotifications] = useState([
     { id: 'not-1', text: 'Security drift on rds-postgres-01: publicly_accessible set to true', type: 'error', time: '10m ago' },
@@ -47,6 +50,18 @@ export function AppShell({ children }: AppShellProps) {
   const clearNotification = (id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id))
   }
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login', { replace: true })
+  }
+
+  // Derive initials from username (up to 2 chars, uppercase)
+  const initials = user?.username
+    ? user.username.slice(0, 2).toUpperCase()
+    : '?'
+  const displayName = user?.username ?? 'Unknown'
+  const displayRole = user?.role ?? ''
 
   return (
     <div className="min-h-screen bg-[#05070A] text-slate-100 relative">
@@ -88,13 +103,20 @@ export function AppShell({ children }: AppShellProps) {
 
           <div className="mt-auto rounded-xl border border-[#1C2633] bg-[#111720] p-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0B0F14] text-slate-200">
-                <UserCircle2 size={18} />
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold">
+                {initials}
               </div>
-              <div>
-                <div className="text-sm font-medium text-white">Ava Singh</div>
-                <div className="text-xs text-slate-400">Security Lead</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-white truncate">{displayName}</div>
+                <div className="text-xs text-slate-400 uppercase tracking-wide">{displayRole}</div>
               </div>
+              <button
+                onClick={handleLogout}
+                title="Sign out"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-500 hover:bg-[#1C2633] hover:text-rose-400 transition shrink-0"
+              >
+                <LogOut size={14} />
+              </button>
             </div>
           </div>
         </aside>
@@ -202,7 +224,7 @@ export function AppShell({ children }: AppShellProps) {
                 </div>
 
                 <div className="h-9 w-9 rounded-full border border-primary/20 bg-primary/10 flex items-center justify-center text-xs font-bold text-primary cursor-default uppercase">
-                  AS
+                  {initials}
                 </div>
               </div>
             </div>

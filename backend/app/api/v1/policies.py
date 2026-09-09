@@ -2,11 +2,12 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from backend.app.core.database import get_db
 from backend.app.db.models import TechnicalControl, RegulatoryRequirement, EvaluationRun, RequirementEvaluation
+from backend.app.core.auth import require_user
 
 router = APIRouter(prefix="/policies", tags=["Policies"])
 
 @router.get("")
-def get_policies(db: Session = Depends(get_db)):
+def get_policies(current_user=Depends(require_user), db: Session = Depends(get_db)):
     controls = db.query(TechnicalControl).all()
     
     # Query latest evaluation run to determine actual live control status

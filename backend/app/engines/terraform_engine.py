@@ -82,6 +82,78 @@ provider "aws" {{
         return "\n\n".join(generated_blocks)
 
     @classmethod
+    def apply_rl_actions(cls, hcl_code: str, action_ids: List[str]) -> tuple[str, List[str], List[str]]:
+        new_hcl = hcl_code
+        applied_actions = []
+        skipped_actions = []
+
+        for action in action_ids:
+            if action == "ACT_DISABLE_RDS_PUBLIC":
+                def repl_rds_pub(match):
+                    body = match.group(2)
+                    if "publicly_accessible" in body:
+                        body = re.sub(r'publicly_accessible\s*=\s*(true|false)', 'publicly_accessible = false', body)
+                    else:
+                        body = body.rstrip() + "\n  publicly_accessible = false\n"
+                    return f'resource "aws_db_instance" "{match.group(1)}" {{{body}}}'
+                
+                new_hcl = re.sub(r'resource\s+"aws_db_instance"\s+"([^"]+)"\s*\{([^}]+)\}', repl_rds_pub, new_hcl)
+                applied_actions.append(action)
+
+            elif action == "ACT_ENABLE_RDS_ENC":
+                def repl_rds_enc(match):
+                    body = match.group(2)
+                    if "storage_encrypted" in body:
+                        body = re.sub(r'storage_encrypted\s*=\s*(true|false)', 'storage_encrypted = true', body)
+                    else:
+                        body = body.rstrip() + "\n  storage_encrypted = true\n"
+                    return f'resource "aws_db_instance" "{match.group(1)}" {{{body}}}'
+                
+                new_hcl = re.sub(r'resource\s+"aws_db_instance"\s+"([^"]+)"\s*\{([^}]+)\}', repl_rds_enc, new_hcl)
+                applied_actions.append(action)
+
+            elif action == "ACT_EXTEND_LOG_RETENTION_180":
+                def repl_cw_log(match):
+                    body = match.group(2)
+                    ret_match = re.search(r'retention_in_days\s*=\s*(\d+)', body)
+                    if ret_match:
+                        val = int(ret_match.group(1))
+                        if val < 180:
+                            body = re.sub(r'retention_in_days\s*=\s*\d+', 'retention_in_days = 180', body)
+                    else:
+                        body = body.rstrip() + "\n  retention_in_days = 180\n"
+                    return f'resource "aws_cloudwatch_log_group" "{match.group(1)}" {{{body}}}'
+                
+                new_hcl = re.sub(r'resource\s+"aws_cloudwatch_log_group"\s+"([^"]+)"\s*\{([^}]+)\}', repl_cw_log, new_hcl)
+                applied_actions.append(action)
+
+            elif action == "ACT_ENABLE_S3_ENC":
+                s3_matches = re.finditer(r'resource\s+"aws_s3_bucket"\s+"([^"]+)"', new_hcl)
+                buckets = [m.group(1) for m in s3_matches]
+                
+                for b in buckets:
+                    # check if enc config exists for this bucket
+                    if not re.search(rf'resource\s+"aws_s3_bucket_server_side_encryption_configuration"\s+"[^"]+"\s*\{{[^}}]+bucket\s*=\s*aws_s3_bucket\.{b}\.id', new_hcl):
+                        enc_block = f"""
+resource "aws_s3_bucket_server_side_encryption_configuration" "{b}_crypto" {{
+  bucket = aws_s3_bucket.{b}.id
+  rule {{
+    apply_server_side_encryption_by_default {{
+      sse_algorithm = "aws:kms"
+    }}
+  }}
+}}"""
+                        new_hcl += "\n" + enc_block
+                applied_actions.append(action)
+
+            elif action in ["ACT_UPGRADE_WEAK_CRYPTO", "ACT_PATCH_SONAR_INJECTION"]:
+                skipped_actions.append(f"{action}: Requires application source code modification.")
+            else:
+                skipped_actions.append(f"{action}: Unsupported or unrecognized Terraform action.")
+
+        return new_hcl, applied_actions, skipped_actions
+
+    @classmethod
     def hcl_to_plan_json(cls, hcl_text: str) -> Dict[str, Any]:
         """
         Parses HCL / Terraform code into a structured Terraform Plan JSON format

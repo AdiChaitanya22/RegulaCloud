@@ -13,36 +13,6 @@ router = APIRouter(prefix="/deployments", tags=["Deployments & Gating"])
 @router.get("")
 def list_deployments(current_user: User = Depends(require_user), db: Session = Depends(get_db)):
     deployments = db.query(Deployment).order_by(Deployment.started_at.desc()).all()
-    if not deployments:
-        return [
-            {
-                "id": "dep-102",
-                "projectId": "proj-healthcare-india",
-                "projectName": "Ayushman Digital Health Registry",
-                "cloudProvider": "AWS",
-                "region": "ap-south-1",
-                "status": "SUCCESS",
-                "startedAt": "10m ago",
-                "completedAt": "5m ago",
-                "complianceScore": 100,
-                "securityScore": 100,
-                "stages": [
-                    {"name": "Applicability Review", "status": "complete", "label": "DPDPA 2023 & CERT-In Validated"},
-                    {"name": "Terraform Generation", "status": "complete", "label": "Approved Modular HCL"},
-                    {"name": "OPA Policy Evaluation", "status": "complete", "label": "0 Policy Violations"},
-                    {"name": "SonarQube Scan", "status": "complete", "label": "0 Vulnerabilities"},
-                    {"name": "AWS Cloud Rollout", "status": "complete", "label": "Active (ap-south-1)"},
-                ],
-                "logs": [
-                    "[INFO] Validating regulatory applicability against India corpus...",
-                    "[INFO] 4 applicable statutory requirements mapped to 6 technical controls.",
-                    "[INFO] OPA Rego engine evaluated 184 guardrails with 0 violations.",
-                    "[INFO] SonarQube verified 0 high-severity CWE findings.",
-                    "[SUCCESS] Deterministic compliance GATE PASSED. Deploying to AWS ap-south-1...",
-                    "[SUCCESS] Deployment completed and SHA-256 evidence logged to audit vault."
-                ]
-            }
-        ]
     return deployments
 
 @router.post("/plan")

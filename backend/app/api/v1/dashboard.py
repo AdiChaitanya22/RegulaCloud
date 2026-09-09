@@ -4,11 +4,12 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, List
 from backend.app.core.database import get_db
 from backend.app.db.models import Project, EvaluationRun, TechnicalControl, Deployment, AuditLog, RequirementEvaluation
+from backend.app.core.auth import require_user
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard Analytics"])
 
 @router.get("/stats")
-def get_dashboard_stats(db: Session = Depends(get_db)):
+def get_dashboard_stats(current_user=Depends(require_user), db: Session = Depends(get_db)):
     projects = db.query(Project).all()
     project_count = len(projects)
     

@@ -92,6 +92,10 @@ class Project(Base):
     compliance_score = Column(Float, nullable=False, default=0.0)
     status = Column(String(32), nullable=False, default="Protected") # Protected, Review, At Risk
     owner = Column(String(128), nullable=False, default="admin@regulacloud.gov.in")
+    infrastructure_path = Column(String(255), nullable=True)
+    application_source_path = Column(String(255), nullable=True)
+    hcl_content = Column(Text, nullable=True)
+    regulatory_scope = Column(JSON, nullable=True, default=list)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -175,6 +179,7 @@ class AuditLog(Base):
         last_entry = session.query(cls).order_by(cls.id.desc()).first()
         prev_hash = last_entry.current_hash if last_entry else "0" * 64
         
+        now = datetime.utcnow()
         entry_payload = {
             "actor": actor,
             "action": action,
@@ -183,7 +188,7 @@ class AuditLog(Base):
             "severity": severity,
             "details": details,
             "previous_hash": prev_hash,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": now.isoformat()
         }
         computed_hash = hashlib.sha256(json.dumps(entry_payload, sort_keys=True).encode()).hexdigest()
         
@@ -196,7 +201,7 @@ class AuditLog(Base):
             details=details,
             previous_hash=prev_hash,
             current_hash=computed_hash,
-            timestamp=datetime.utcnow()
+            timestamp=now
         )
         session.add(log)
         session.commit()

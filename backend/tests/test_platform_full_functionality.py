@@ -112,7 +112,8 @@ def test_dynamic_compliance_summary(client):
     assert "failed" in data
 
 def test_dynamic_policies_status(client):
-    res = client.get("/api/v1/policies")
+    token = create_access_token({"sub": "admin", "role": "ADMIN", "id": "usr-admin"})
+    res = client.get("/api/v1/policies", headers={"Authorization": f"Bearer {token}"})
     assert res.status_code == 200
     policies = res.json()
     assert len(policies) > 0
@@ -121,7 +122,8 @@ def test_dynamic_policies_status(client):
         assert "framework" in p
 
 def test_dynamic_dashboard_stats(client):
-    res = client.get("/api/v1/dashboard/stats")
+    token = create_access_token({"sub": "admin", "role": "ADMIN", "id": "usr-admin"})
+    res = client.get("/api/v1/dashboard/stats", headers={"Authorization": f"Bearer {token}"})
     assert res.status_code == 200
     data = res.json()
     assert "complianceScore" in data
@@ -155,8 +157,9 @@ def test_reports_generate_and_download_flow(client):
     assert rep_id in dl_res.text
 
 def test_settings_persistence(client):
+    token = create_access_token({"sub": "admin", "role": "ADMIN", "id": "usr-admin"})
     # 1. Get settings
-    get_res = client.get("/api/v1/settings")
+    get_res = client.get("/api/v1/settings", headers={"Authorization": f"Bearer {token}"})
     assert get_res.status_code == 200
 
     # 2. Save settings
@@ -169,12 +172,12 @@ def test_settings_persistence(client):
         "rulesHipaa": True,
         "scanIntervalHours": 2,
         "enforcementMode": "FailClosed"
-    })
+    }, headers={"Authorization": f"Bearer {token}"})
     assert save_res.status_code == 200
     assert save_res.json()["status"] == "SUCCESS"
 
-    # 3. Verify persistence
-    verify_res = client.get("/api/v1/settings")
+    # 3. Verify persistence (auth required since hardening phase)
+    verify_res = client.get("/api/v1/settings", headers={"Authorization": f"Bearer {token}"})
     assert verify_res.status_code == 200
     assert verify_res.json()["awsArn"] == "arn:aws:iam::999988887777:role/RegulaCloudCustomRole"
     assert verify_res.json()["rulesHipaa"] is True

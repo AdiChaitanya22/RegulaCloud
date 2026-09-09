@@ -4,6 +4,8 @@ from typing import Dict, Any
 from backend.app.core.database import get_db
 from backend.app.db.models import SystemSetting, AuditLog
 
+from backend.app.core.auth import require_user
+
 router = APIRouter(prefix="/settings", tags=["System Settings"])
 
 DEFAULT_SETTINGS = {
@@ -18,7 +20,7 @@ DEFAULT_SETTINGS = {
 }
 
 @router.get("")
-def get_settings(db: Session = Depends(get_db)):
+def get_settings(current_user=Depends(require_user), db: Session = Depends(get_db)):
     setting_row = db.query(SystemSetting).filter(SystemSetting.key == "global_config").first()
     if setting_row and setting_row.value:
         return setting_row.value

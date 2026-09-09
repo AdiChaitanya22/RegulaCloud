@@ -49,8 +49,9 @@ class ComplianceEngine:
 
         # 2. Collect Evidence
         # Evidence A: OPA / Terraform Plan Evaluation
-        if not tfplan_json and hcl_code:
-            tfplan_json = TerraformEngine.hcl_to_plan_json(hcl_code)
+        hcl_code_to_use = hcl_code or project.hcl_content
+        if not tfplan_json and hcl_code_to_use:
+            tfplan_json = TerraformEngine.hcl_to_plan_json(hcl_code_to_use)
         elif not tfplan_json:
             # Generate default plan for project
             default_hcl = TerraformEngine.generate_compliant_hcl({
@@ -63,7 +64,10 @@ class ComplianceEngine:
 
         # Evidence B: SonarQube Code Security Evidence
         sonar_client = SonarQubeClient()
-        sonar_findings = sonar_client.fetch_project_findings(sonar_project_key or project.id)
+        sonar_findings = sonar_client.fetch_project_findings(
+            sonar_project_key or project.id, 
+            application_source_path=project.application_source_path
+        )
 
         # 3. Deterministic Evaluation of All Requirements
         all_db_reqs = db.query(RegulatoryRequirement).all()
@@ -187,11 +191,13 @@ class ComplianceEngine:
             "project_id": project_id,
             "score": score,
             "overall_status": overall_status,
+            "deployment_allowed": not is_deployment_blocked,
             "passed": passed_count,
             "failed": failed_count,
             "unknown": unknown_count,
-            "opa_violations_count": len(opa_violations),
-            "sonar_findings_count": len(sonar_findings) if sonar_findings is not None else 0,
+            "hcl_code": hcl_code_to_use or "",
+            "opa_violations": opa_violations,
+            "sonar_findings": sonar_findings or [],
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
         evidence_hash = hashlib.sha256(json.dumps(evidence_payload, sort_keys=True).encode()).hexdigest()
