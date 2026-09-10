@@ -17,10 +17,15 @@ import { Dialog, DialogContent } from '../components/ui/dialog'
 import { Select } from '../components/ui/select'
 import { projectService } from '../services/projectService'
 import type { Project, CloudProvider } from '../types'
+import { useNavigate } from 'react-router-dom'
+import { useProject } from '../context/ProjectContext'
+import { ArrowRight } from 'lucide-react'
 
 export function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const { activeProject, setActiveProject } = useProject()
+  const navigate = useNavigate()
 
   // Filter/Sort State
   const [search, setSearch] = useState('')
@@ -38,6 +43,8 @@ export function ProjectsPage() {
   const [infraHcl, setInfraHcl] = useState('')
   const [appFile, setAppFile] = useState<File | null>(null)
   const [isCreating, setIsCreating] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
 
   // Details Drawer State
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
@@ -58,30 +65,36 @@ export function ProjectsPage() {
     if (!newName || !newRegion || !newOwner) return
 
     setIsCreating(true)
+    setErrorMsg(null)
+    let activeId = createdProjectId
+
     try {
-      const newProj = await projectService.createProject({
-        name: newName,
-        cloudProvider: newProvider,
-        region: newRegion,
-        complianceScore: 100, // New projects start clean
-        lastDeployment: 'Never deployed',
-        status: 'Protected',
-        owner: newOwner,
-      })
+      if (!activeId) {
+        const newProj = await projectService.createProject({
+          name: newName,
+          organization: 'Healthcare Services',
+          sector: 'Healthcare',
+          cloud_provider: newProvider,
+          aws_region: newRegion,
+          owner: newOwner,
+        })
+        activeId = newProj.id
+        setCreatedProjectId(activeId)
+        setProjects((prev) => [...prev, newProj])
+      }
 
       if (newRegScope.length > 0) {
-        await projectService.updateProject(newProj.id, { regulatory_scope: newRegScope })
+        await projectService.updateProject(activeId, { regulatory_scope: newRegScope })
       }
 
       if (infraFile || infraHcl) {
-        await projectService.uploadInfrastructure(newProj.id, infraFile || undefined, infraHcl)
+        await projectService.uploadInfrastructure(activeId, infraFile || undefined, infraHcl)
       }
 
       if (appFile) {
-        await projectService.uploadApplication(newProj.id, appFile)
+        await projectService.uploadApplication(activeId, appFile)
       }
 
-      setProjects((prev) => [...prev, newProj])
       setIsCreateOpen(false)
 
       // Reset Form
@@ -92,6 +105,11 @@ export function ProjectsPage() {
       setInfraFile(null)
       setInfraHcl('')
       setAppFile(null)
+      setCreatedProjectId(null)
+      setErrorMsg(null)
+    } catch (err: any) {
+      console.error(err)
+      setErrorMsg(err.message || 'Operation failed. Please try again.')
     } finally {
       setIsCreating(false)
     }
@@ -211,7 +229,14 @@ export function ProjectsPage() {
                 <Card className="p-5 h-full hover:border-primary/50 transition flex flex-col justify-between border border-[#1C2633] bg-[#0B0F14] hover:shadow-soft">
                   <div>
                     <div className="mb-4 flex items-start justify-between">
-                      <h2 className="text-lg font-medium text-white line-clamp-1">{project.name}</h2>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-lg font-medium text-white line-clamp-1">{project.name}</h2>
+                        {activeProject?.id === project.id && (
+                          <span className="rounded-full bg-primary/20 border border-primary/30 px-2 py-0.5 text-[9px] font-bold text-primary">
+                            ACTIVE
+                          </span>
+                        )}
+                      </div>
                       <span
                         className={`rounded-full border px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
                           project.status === 'Protected'
@@ -252,8 +277,19 @@ export function ProjectsPage() {
       )}
 
       {/* Create Project Modal */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent title="Create Project">
+      <Dialog open={isCreateOpen} onOpenChange={(open) => {
+        setIsCreateOpen(open)
+        if (!open) {
+          setCreatedProjectId(null)
+          setErrorMsg(null)
+        }
+      }}>
+        <DialogContent title={createdProjectId ? "Upload Artifacts" : "Create Project"}>
+          {errorMsg && (
+            <div className="mb-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm font-semibold text-rose-500">
+              {errorMsg}
+            </div>
+          )}
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Project Name</label>
@@ -348,7 +384,7 @@ export function ProjectsPage() {
               disabled={isCreating}
               className="w-full rounded-xl bg-primary hover:bg-blue-600 py-3 text-sm font-bold text-white transition mt-2 disabled:opacity-50"
             >
-              {isCreating ? 'Creating & Uploading...' : 'Create Project'}
+              {isCreating ? 'Processing...' : createdProjectId ? 'Retry Uploads' : 'Create Project'}
             </button>
           </form>
         </DialogContent>
@@ -443,10 +479,19 @@ export function ProjectsPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="p-6 border-t border-[#1C2633]/60 bg-[#111720]/20 flex gap-3">
+              <div className="p-6 border-t border-[#1C2633]/60 bg-[#111720]/20 flex gap-3 flex-col">
+                <button
+                  onClick={() => {
+                    setActiveProject(selectedProject)
+                    navigate('/deploy')
+                  }}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary hover:bg-blue-600 px-4 py-3 text-sm font-bold text-white transition shadow-lg"
+                >
+                  Manage This Project <ArrowRight size={16} />
+                </button>
                 <button
                   onClick={() => handleDelete(selectedProject.id)}
-                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm font-bold text-rose-500 hover:bg-rose-500/20 transition"
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm font-bold text-rose-500 hover:bg-rose-500/20 transition"
                 >
                   <Trash2 size={16} /> Delete Project
                 </button>

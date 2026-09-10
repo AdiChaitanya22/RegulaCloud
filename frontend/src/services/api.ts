@@ -49,10 +49,18 @@ export async function request<T>(
 
     if (!response.ok) {
       const errText = await response.text()
-      return {
-        status: response.status,
-        error: errText || `Request failed with status ${response.status}`,
-      }
+      let parsedError = errText
+      try {
+        const json = JSON.parse(errText)
+        parsedError = json.detail || json.message || errText
+        if (typeof parsedError !== 'string') {
+          parsedError = JSON.stringify(parsedError)
+        }
+      } catch (e) {}
+      
+      const error: any = new Error(parsedError || `Request failed with status ${response.status}`)
+      error.status = response.status
+      throw error
     }
 
     const data = await response.json()
@@ -63,10 +71,9 @@ export async function request<T>(
     }
   } catch (err: any) {
     clearTimeout(id)
-    setBackendAvailability(false)
-    return {
-      status: 0,
-      error: err.name === 'AbortError' ? 'Request timed out' : err.message || 'Connection failed',
+    if (!err.status) {
+      setBackendAvailability(false)
     }
+    throw err
   }
 }

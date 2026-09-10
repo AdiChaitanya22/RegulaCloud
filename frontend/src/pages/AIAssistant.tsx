@@ -13,6 +13,8 @@ import {
 import { Card } from '../components/ui/card'
 import { aiService } from '../services/aiService'
 import type { AICitation } from '../services/aiService'
+import { useProject } from '../context/ProjectContext'
+import { AlertOctagon } from 'lucide-react'
 
 interface ChatMessage {
   sender: 'user' | 'ai'
@@ -45,8 +47,7 @@ export function AIAssistantPage() {
   const [isTyping, setIsTyping] = useState(false)
   const [expandedSections, setExpandedSections] = useState<Record<number, boolean>>({})
   const chatEndRef = useRef<HTMLDivElement | null>(null)
-
-  const activeProjectId = 'proj-healthcare-india'
+  const { activeProject } = useProject()
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -71,7 +72,7 @@ export function AIAssistantPage() {
         sender: m.sender,
         text: m.text,
       }))
-      const res = await aiService.chatWithCopilot(activeProjectId, text, historyForApi as any)
+      const res = await aiService.chatWithCopilot(activeProject!.id, text, historyForApi as any)
 
       if (res) {
         const aiMsg: ChatMessage = {
@@ -89,6 +90,16 @@ export function AIAssistantPage() {
     } finally {
       setIsTyping(false)
     }
+  }
+
+  if (!activeProject) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <AlertOctagon size={48} className="text-slate-500" />
+        <h2 className="text-xl font-bold text-white">No Project Selected</h2>
+        <p className="text-slate-400">Please select a project to analyze its compliance with the AI Copilot.</p>
+      </div>
+    )
   }
 
   return (
@@ -123,7 +134,7 @@ export function AIAssistantPage() {
         {/* Project Target Badge */}
         <div className="rounded-xl border border-[#1C2633] bg-[#111720] px-4 py-2 text-xs">
           <span className="text-slate-400">Active Grounding Target: </span>
-          <strong className="text-white font-mono">Ayushman Digital Health Registry</strong>
+          <strong className="text-white font-mono">{activeProject.name}</strong>
         </div>
       </div>
 

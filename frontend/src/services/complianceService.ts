@@ -1,27 +1,7 @@
 import { request } from './api'
 import type { ComplianceResult } from '../types'
 
-const defaultFrameworks: ComplianceResult = {
-  overallScore: 95,
-  passed: 42,
-  failed: 2,
-  warnings: 1,
-  notEvaluated: 0,
-  frameworks: [
-    { name: 'DPDP Act 2023', score: 96, status: 'Compliant' },
-    { name: 'DPDP Rules 2025', score: 92, status: 'Compliant' },
-    { name: 'CERT-In Directions 2022', score: 88, status: 'Review Required' },
-  ],
-}
-
 export const complianceService = {
-  async getComplianceScore(): Promise<ComplianceResult> {
-    const response = await request<ComplianceResult>('/compliance/summary')
-    if (response.data) {
-      return response.data
-    }
-    return defaultFrameworks
-  },
 
   async evaluateCompliance(projectId: string, hclCode?: string) {
     const response = await request<any>('/compliance/evaluate', {
@@ -45,7 +25,7 @@ export const complianceService = {
     return []
   },
 
-  async scanCompliance(projectId: string): Promise<ComplianceResult> {
+  async getComplianceScore(projectId: string): Promise<ComplianceResult | null> {
     const res = await this.evaluateCompliance(projectId)
     if (res) {
       return {
@@ -55,12 +35,12 @@ export const complianceService = {
         warnings: 0,
         notEvaluated: res.not_applicable_count,
         frameworks: [
-          { name: 'DPDP Act 2023', score: 96, status: 'Compliant' },
-          { name: 'DPDP Rules 2025', score: 92, status: 'Compliant' },
-          { name: 'CERT-In Directions 2022', score: 88, status: 'Review Required' },
+          { name: 'DPDP Act 2023', score: res.passed_count > 0 ? 100 : 0, status: res.passed_count > 0 ? 'Compliant' : 'Review Required' },
+          { name: 'DPDP Rules 2025', score: res.passed_count > 0 ? 100 : 0, status: res.passed_count > 0 ? 'Compliant' : 'Review Required' },
+          { name: 'CERT-In Directions 2022', score: res.passed_count > 0 ? 100 : 0, status: res.passed_count > 0 ? 'Compliant' : 'Review Required' },
         ],
       }
     }
-    return defaultFrameworks
+    return null
   },
 }

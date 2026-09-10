@@ -20,6 +20,7 @@ import { DeploymentActivity } from '../components/charts/DeploymentActivity'
 import { ResourceDistribution } from '../components/charts/ResourceDistribution'
 import { request } from '../services/api'
 import { complianceService } from '../services/complianceService'
+import { useProject } from '../context/ProjectContext'
 
 export function DashboardPage() {
   const [stats, setStats] = useState<any>({
@@ -35,6 +36,7 @@ export function DashboardPage() {
   })
   const [isScanning, setIsScanning] = useState(false)
   const [scanMessage, setScanMessage] = useState<string | null>(null)
+  const { activeProject } = useProject()
 
   const loadStats = async () => {
     const res = await request<any>('/dashboard/stats')
@@ -48,10 +50,11 @@ export function DashboardPage() {
   }, [])
 
   const triggerScan = async () => {
+    if (!activeProject) return
     setIsScanning(true)
     setScanMessage('Executing deterministic compliance scan across project portfolio...')
     try {
-      await complianceService.evaluateCompliance('proj-healthcare-india')
+      await complianceService.evaluateCompliance(activeProject.id)
       await loadStats()
       setScanMessage('Compliance scan completed and metrics updated from live database.')
       setTimeout(() => setScanMessage(null), 4000)

@@ -9,6 +9,8 @@ import {
 import { Card } from '../components/ui/card'
 import { complianceService } from '../services/complianceService'
 import type { ComplianceResult } from '../types'
+import { useProject } from '../context/ProjectContext'
+import { AlertOctagon } from 'lucide-react'
 
 interface TraceabilityItem {
   regulation_id: string
@@ -29,6 +31,7 @@ interface TraceabilityItem {
 }
 
 export function CompliancePage() {
+  const { activeProject } = useProject()
   const [summary, setSummary] = useState<ComplianceResult | null>(null)
   const [traceabilityMatrix, setTraceabilityMatrix] = useState<TraceabilityItem[]>([])
   const [selectedRegIndex, setSelectedRegIndex] = useState<number>(0)
@@ -36,9 +39,11 @@ export function CompliancePage() {
   const [activeTab, setActiveTab] = useState<'matrix' | 'overview'>('matrix')
 
   useEffect(() => {
+    if (!activeProject) return
+
     async function loadData() {
       const [sumData, matrixData] = await Promise.all([
-        complianceService.getComplianceScore(),
+        complianceService.getComplianceScore(activeProject!.id),
         complianceService.getTraceabilityMatrix()
       ])
       setSummary(sumData)
@@ -50,7 +55,17 @@ export function CompliancePage() {
       }
     }
     loadData()
-  }, [])
+  }, [activeProject?.id])
+
+  if (!activeProject) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <AlertOctagon size={48} className="text-slate-500" />
+        <h2 className="text-xl font-bold text-white">No Project Selected</h2>
+        <p className="text-slate-400">Please select a project from the Registry to view its compliance scorecard.</p>
+      </div>
+    )
+  }
 
   const selectedReg = traceabilityMatrix[selectedRegIndex]
 

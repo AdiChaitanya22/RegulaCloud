@@ -14,6 +14,8 @@ import { Card } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import { securityService } from '../services/securityService'
 import type { SecurityFinding } from '../types'
+import { useProject } from '../context/ProjectContext'
+import { AlertOctagon } from 'lucide-react'
 
 const scanSteps = [
   'Initializing checkov scanner...',
@@ -27,6 +29,7 @@ const scanSteps = [
 ]
 
 export function SecurityScannerPage() {
+  const { activeProject } = useProject()
   const [findings, setFindings] = useState<SecurityFinding[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isScanning, setIsScanning] = useState(false)
@@ -35,21 +38,22 @@ export function SecurityScannerPage() {
 
   // Load Initial Findings
   useEffect(() => {
+    if (!activeProject) return
     async function load() {
       setIsLoading(true)
-      const data = await securityService.getSecurityFindings()
+      const data = await securityService.getSecurityFindings(activeProject!.id)
       setFindings(data)
       setIsLoading(false)
     }
     load()
-  }, [])
+  }, [activeProject?.id])
 
   const runScan = async () => {
-    if (isScanning) return
+    if (isScanning || !activeProject) return
     setIsScanning(true)
     setScanIndex(2)
     try {
-      const newFindings = await securityService.scanSecurity('proj-healthcare-india')
+      const newFindings = await securityService.scanSecurity(activeProject.id)
       setFindings(newFindings)
       setSelectedFinding(null)
       setScanIndex(scanSteps.length)
@@ -76,6 +80,16 @@ export function SecurityScannerPage() {
   const criticalCount = findings.filter((f) => f.severity === 'Critical').length
   const highCount = findings.filter((f) => f.severity === 'High').length
   const totalFindings = findings.length
+
+  if (!activeProject) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <AlertOctagon size={48} className="text-slate-500" />
+        <h2 className="text-xl font-bold text-white">No Project Selected</h2>
+        <p className="text-slate-400">Please select a project from the Registry to scan for vulnerabilities.</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 relative min-h-[85vh]">

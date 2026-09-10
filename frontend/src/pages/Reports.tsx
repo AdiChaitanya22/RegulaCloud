@@ -4,6 +4,8 @@ import { Download, FileText, Loader2, Plus, ShieldCheck } from 'lucide-react'
 import { Card } from '../components/ui/card'
 import { reportService } from '../services/reportService'
 import type { Report } from '../types'
+import { useProject } from '../context/ProjectContext'
+import { AlertOctagon } from 'lucide-react'
 
 const extraReports = [
   {
@@ -27,20 +29,23 @@ const extraReports = [
 ]
 
 export function ReportsPage() {
+  const { activeProject } = useProject()
   const [reports, setReports] = useState<Report[]>([])
   const [extraIndex, setExtraIndex] = useState(0)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    if (!activeProject) return
     async function load() {
       setIsLoading(true)
       const data = await reportService.getReports()
+      // Filter by active project if backend doesn't
       setReports(data)
       setIsLoading(false)
     }
     load()
-  }, [])
+  }, [activeProject?.id])
 
   const handleGenerate = async () => {
     if (isGenerating || extraIndex >= extraReports.length) return
@@ -65,16 +70,21 @@ export function ReportsPage() {
     setExtraIndex((prev) => prev + 1)
 
     // Call service to trigger backend or local compilation simulation
-    const createdReport = await reportService.generateReport({
-      title: targetReport.title,
-      grade: targetReport.grade,
-      score: targetReport.score,
-      desc: targetReport.desc,
-    })
+    try {
+      const createdReport = await reportService.generateReport({
+        title: targetReport.title,
+        grade: targetReport.grade,
+        score: targetReport.score,
+        desc: targetReport.desc,
+      }, activeProject!.id)
 
-    setReports((prev) =>
-      prev.map((r) => (r.id === tempId ? { ...createdReport, isGenerating: false } : r))
-    )
+      setReports((prev) =>
+        prev.map((r) => (r.id === tempId ? { ...createdReport, isGenerating: false } : r))
+      )
+    } catch (e) {
+      setReports((prev) => prev.filter(r => r.id !== tempId))
+      console.error(e)
+    }
     setIsGenerating(false)
   }
 
@@ -87,6 +97,16 @@ export function ReportsPage() {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+  }
+
+  if (!activeProject) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <AlertOctagon size={48} className="text-slate-500" />
+        <h2 className="text-xl font-bold text-white">No Project Selected</h2>
+        <p className="text-slate-400">Please select a project from the Registry to view and generate compliance reports.</p>
+      </div>
+    )
   }
 
   return (

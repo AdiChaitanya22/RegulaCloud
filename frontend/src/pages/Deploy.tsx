@@ -16,89 +16,11 @@ import { complianceService } from '../services/complianceService'
 import { aiService } from '../services/aiService'
 import { deploymentService } from '../services/deploymentService'
 import { projectService } from '../services/projectService'
-
-const sampleVulnerableHCL = `terraform {
-  required_version = ">= 1.5.0"
-}
-
-provider "aws" {
-  region = "ap-south-1"
-}
-
-# VIOLATION 1: RDS Publicly Accessible (DPDPA 2023 Sec 8.1 / POL-DPDP-NET-01)
-# VIOLATION 2: RDS Storage Encryption Disabled (DPDPA 2023 Sec 8.5 / POL-DPDP-ENC-01)
-resource "aws_db_instance" "patient_db" {
-  identifier           = "ayushman-patient-db"
-  allocated_storage    = 50
-  engine               = "postgres"
-  publicly_accessible = true
-  storage_encrypted    = false
-}
-
-# VIOLATION 3: S3 Bucket without KMS Encryption (DPDPA 2023 Sec 8.5 / POL-DPDP-ENC-01)
-resource "aws_s3_bucket" "patient_records" {
-  bucket = "ayushman-patient-records-storage"
-}
-
-# VIOLATION 4: CloudWatch Log Retention < 180 Days (CERT-In Directions 2022 / POL-CERTIN-LOG-180)
-resource "aws_cloudwatch_log_group" "audit_logs" {
-  name              = "/aws/cloudtrail/ayushman-trail"
-  retention_in_days = 30
-}`
-
-const sampleCompliantHCL = `terraform {
-  required_version = ">= 1.5.0"
-}
-
-provider "aws" {
-  region = "ap-south-1"
-}
-
-# SECURE: Fully Compliant with DPDPA 2023 & CERT-In Directions 2022
-resource "aws_db_instance" "patient_db" {
-  identifier           = "ayushman-patient-db"
-  allocated_storage    = 50
-  engine               = "postgres"
-  publicly_accessible = false
-  storage_encrypted    = true
-}
-
-resource "aws_s3_bucket" "patient_records" {
-  bucket = "ayushman-patient-records-storage"
-}
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "patient_records_crypto" {
-  bucket = aws_s3_bucket.patient_records.id
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "aws:kms"
-    }
-  }
-}
-
-resource "aws_s3_bucket_public_access_block" "patient_records_pab" {
-  bucket = aws_s3_bucket.patient_records.id
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-resource "aws_cloudwatch_log_group" "audit_logs" {
-  name              = "/aws/cloudtrail/ayushman-trail"
-  retention_in_days = 180
-}
-
-resource "aws_cloudtrail" "ayushman_trail" {
-  name                          = "ayushman-trail"
-  s3_bucket_name                = aws_s3_bucket.patient_records.id
-  is_multi_region_trail         = true
-  enable_logging                = true
-  cloud_watch_logs_group_arn    = aws_cloudwatch_log_group.audit_logs.arn
-}`
+import { useProject } from '../context/ProjectContext'
 
 export function DeployPage() {
-  const [hclCode, setHclCode] = useState(sampleVulnerableHCL)
+  const { activeProject } = useProject()
+  const [hclCode, setHclCode] = useState('')
   const [evalResult, setEvalResult] = useState<any | null>(null)
   const [rlRecommendations, setRlRecommendations] = useState<any[] | null>(null)
   const [isEvaluating, setIsEvaluating] = useState(false)
@@ -110,27 +32,30 @@ export function DeployPage() {
 
   // Run initial evaluation on mount
   useEffect(() => {
+    if (!activeProject) return
+
     const initHcl = async () => {
       try {
-        const storedHcl = await projectService.getProjectHcl('proj-ayushman-portal')
+        const storedHcl = await projectService.getProjectHcl(activeProject.id)
         if (storedHcl && storedHcl.trim().length > 0) {
           setHclCode(storedHcl)
           runEvaluation(storedHcl)
         } else {
-          runEvaluation(sampleVulnerableHCL)
+          setNotification({ type: 'info', message: 'No infrastructure configuration found for this project.' })
         }
       } catch (err) {
-        runEvaluation(sampleVulnerableHCL)
+        setNotification({ type: 'error', message: 'Failed to load project infrastructure.' })
       }
     }
     initHcl()
-  }, [])
+  }, [activeProject?.id])
 
   const runEvaluation = async (codeToEval: string) => {
+    if (!activeProject) return
     setIsEvaluating(true)
     setDeploySuccess(false)
     try {
-      const res = await complianceService.evaluateCompliance('proj-ayushman-portal', codeToEval)
+      const res = await complianceService.evaluateCompliance(activeProject.id, codeToEval)
       setEvalResult(res)
 
       if (res && !res.deployment_allowed) {
@@ -166,7 +91,7 @@ export function DeployPage() {
       }
 
       const actionIds = rlRecommendations.map((r: any) => r.action_id)
-      const result = await projectService.applyRemediations('proj-ayushman-portal', actionIds)
+      const result = await projectService.applyRemediations(activeProject!.id, actionIds)
 
       if (result.success && result.hcl_code) {
         setHclCode(result.hcl_code)
@@ -201,10 +126,10 @@ export function DeployPage() {
     try {
       // Use the existing authenticated user's token — no credential injection
       const planRes = await deploymentService.createDeploymentPlan({
-        projectId: 'proj-ayushman-portal',
-        projectName: 'Ayushman National Digital Health Portal',
-        cloudProvider: 'AWS',
-        region: 'ap-south-1',
+        projectId: activeProject!.id,
+        projectName: activeProject!.name,
+        cloudProvider: activeProject!.cloudProvider,
+        region: activeProject!.region,
       })
       if (planRes && planRes.id) {
         setActiveDeploymentId(planRes.id)
@@ -243,6 +168,16 @@ export function DeployPage() {
   const opaCount = evalResult?.opa_violations?.length ?? 0
   const sonarFindings = evalResult?.sonar_findings ?? []
 
+  if (!activeProject) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <AlertOctagon size={48} className="text-slate-500" />
+        <h2 className="text-xl font-bold text-white">No Project Selected</h2>
+        <p className="text-slate-400">Please select a project from the Registry to manage its deployment.</p>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -255,29 +190,7 @@ export function DeployPage() {
             </span>
           </div>
           <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white">Controlled Terraform Deployment</h1>
-        </div>
-
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              setHclCode(sampleVulnerableHCL)
-              runEvaluation(sampleVulnerableHCL)
-              setNotification(null)
-            }}
-            className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2 text-xs font-bold text-rose-400 hover:bg-rose-500/20 transition"
-          >
-            Load Non-Compliant HCL
-          </button>
-          <button
-            onClick={() => {
-              setHclCode(sampleCompliantHCL)
-              runEvaluation(sampleCompliantHCL)
-              setNotification(null)
-            }}
-            className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2 text-xs font-bold text-emerald-600 hover:bg-emerald-500/20 transition"
-          >
-            Load Compliant HCL
-          </button>
+          <p className="text-sm text-slate-400 mt-1">Project: <strong className="text-white">{activeProject.name}</strong></p>
         </div>
       </div>
 

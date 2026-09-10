@@ -1,7 +1,12 @@
 import { AppRoutes } from './routes'
+import { ProjectProvider } from './context/ProjectContext'
 
 function App() {
-  return <AppRoutes />
+  return (
+    <ProjectProvider>
+      <AppRoutes />
+    </ProjectProvider>
+  )
 }
 
 export default App
