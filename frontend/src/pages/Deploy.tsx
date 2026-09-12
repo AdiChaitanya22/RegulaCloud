@@ -82,6 +82,11 @@ export function DeployPage() {
   }
 
   const applyRLRemediation = async () => {
+    if (!activeProject) {
+      setNotification({ type: 'error', message: 'No active project selected.' })
+      return
+    }
+
     setIsApplyingRL(true)
     setNotification({ type: 'info', message: 'Applying RL-optimized remediation actions to HCL & code baselines...' })
     try {
@@ -90,30 +95,52 @@ export function DeployPage() {
         return
       }
 
-      const actionIds = rlRecommendations.map((r: any) => r.action_id)
-      const result = await projectService.applyRemediations(activeProject!.id, actionIds)
+      const actionIds = rlRecommendations.map((r: any) => r.action_id).filter(Boolean)
+      
+      console.log('RL Remediation trace:', {
+        handlerEntered: true,
+        projectId: activeProject.id,
+        recommendationCount: rlRecommendations.length,
+        extractedActionIds: actionIds,
+        requestUrl: `/api/v1/projects/${activeProject.id}/remediate`
+      })
+
+      if (actionIds.length === 0) {
+        setNotification({ type: 'error', message: 'No valid action IDs found in recommendations.' })
+        return
+      }
+
+      const result = await projectService.applyRemediations(activeProject.id, actionIds)
+      
+      console.log('RL Remediation API response:', result)
 
       if (result.success && result.hcl_code) {
         setHclCode(result.hcl_code)
         
         // Build success message
-        let msg = 'Remediation applied!'
+        let msg = result.message || 'Remediation processed.'
         if (result.applied_actions && result.applied_actions.length > 0) {
-          msg += ` Applied: ${result.applied_actions.length} action(s).`
+          msg += ` Applied: ${result.applied_actions.join(', ')}.`
         }
         if (result.skipped_actions && result.skipped_actions.length > 0) {
-          msg += ` Skipped: ${result.skipped_actions.length} action(s) (requires manual code update).`
+          msg += ` Skipped: ${result.skipped_actions.join(', ')}.`
         }
-        setNotification({ type: 'success', message: msg })
+        
+        // Check if no actions were actually applied
+        if (!result.applied_actions || result.applied_actions.length === 0) {
+          setNotification({ type: 'error', message: `No remediations were applied. ${msg}` })
+        } else {
+          setNotification({ type: 'success', message: msg })
+        }
 
         // Re-evaluate immediately with new HCL
         runEvaluation(result.hcl_code)
       } else {
         setNotification({ type: 'error', message: result.message || 'Remediation failed.' })
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('RL remediation error', e)
-      setNotification({ type: 'error', message: 'Failed to apply remediation via API.' })
+      setNotification({ type: 'error', message: e.message || 'Failed to apply remediation via API.' })
     } finally {
       setIsApplyingRL(false)
     }

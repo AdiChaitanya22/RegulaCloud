@@ -146,8 +146,26 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "{b}_crypto" {{
                         new_hcl += "\n" + enc_block
                 applied_actions.append(action)
 
+            elif action == "ACT_ENABLE_CLOUDTRAIL_MULTI":
+                def repl_trail(match):
+                    body = match.group(2)
+                    if "is_multi_region_trail" in body:
+                        body = re.sub(r'is_multi_region_trail\s*=\s*(true|false)', 'is_multi_region_trail = true', body)
+                    else:
+                        body = body.rstrip() + "\n  is_multi_region_trail = true\n"
+                    
+                    if "enable_logging" in body:
+                        body = re.sub(r'enable_logging\s*=\s*(true|false)', 'enable_logging = true', body)
+                    else:
+                        body = body.rstrip() + "\n  enable_logging = true\n"
+                    return f'resource "aws_cloudtrail" "{match.group(1)}" {{{body}}}'
+                
+                new_hcl = re.sub(r'resource\s+"aws_cloudtrail"\s+"([^"]+)"\s*\{([^}]+)\}', repl_trail, new_hcl)
+                applied_actions.append(action)
+
             elif action in ["ACT_UPGRADE_WEAK_CRYPTO", "ACT_PATCH_SONAR_INJECTION"]:
-                skipped_actions.append(f"{action}: Requires application source code modification.")
+                # Will be handled by ApplicationRemediator
+                pass
             else:
                 skipped_actions.append(f"{action}: Unsupported or unrecognized Terraform action.")
 

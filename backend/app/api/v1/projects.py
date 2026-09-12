@@ -12,6 +12,7 @@ from backend.app.core.database import get_db
 from backend.app.db.models import Project, AuditLog
 from backend.app.schemas.projects import ProjectCreate, ProjectUpdate, ProjectResponse
 from backend.app.engines.terraform_engine import TerraformEngine
+from backend.app.engines.application_remediator import ApplicationRemediator
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
@@ -210,7 +211,28 @@ def remediate_project(
     if not project.hcl_content:
         raise HTTPException(status_code=400, detail="Project has no HCL content to remediate.")
 
-    new_hcl, applied, skipped = TerraformEngine.apply_rl_actions(project.hcl_content, req.action_ids)
+    new_hcl, tf_applied, tf_skipped = TerraformEngine.apply_rl_actions(project.hcl_content, req.action_ids)
+    
+    app_action_ids = [a for a in req.action_ids if a not in tf_applied]
+    
+    if project.application_source_path and app_action_ids:
+        app_applied, app_skipped_temp, changed_files = ApplicationRemediator.apply_source_actions(
+            project.application_source_path, app_action_ids
+        )
+        app_skipped = app_skipped_temp
+    else:
+        app_applied = []
+        app_skipped = [f"{a}: No application source path available to patch." for a in app_action_ids if a in ["ACT_UPGRADE_WEAK_CRYPTO", "ACT_PARAMETERIZE_SQL_QUERIES", "ACT_PATCH_SONAR_INJECTION"]]
+        changed_files = []
+
+    applied = tf_applied + app_applied
+    
+    # Merge skipped actions correctly, omitting ones that were eventually applied
+    skipped = [s for s in tf_skipped if not any(s.startswith(a) for a in app_applied)]
+    for app_s in app_skipped:
+        action_id = app_s.split(":")[0]
+        if not any(s.startswith(action_id) for s in skipped):
+            skipped.append(app_s)
     
     project.hcl_content = new_hcl
     
@@ -224,6 +246,7 @@ def remediate_project(
         details={
             "applied_action_ids": applied,
             "skipped_action_ids": skipped,
+            "changed_files": changed_files,
             "remediated_hcl_hash": __import__('hashlib').sha256(new_hcl.encode()).hexdigest() if new_hcl else None
         }
     )
