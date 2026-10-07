@@ -51,8 +51,30 @@ class ComplianceEngine:
         # 2. Collect Evidence
         # Evidence A: OPA / Terraform Plan Evaluation
         hcl_code_to_use = hcl_code or project.hcl_content
+        terraform_evaluation_source = "TERRAFORM_SYNTHETIC_FALLBACK"
+        terraform_validation_status = "PASS"
+        terraform_diagnostics = []
+
+        native_plan_json = None
         if not tfplan_json and hcl_code_to_use:
-            tfplan_json = TerraformEngine.hcl_to_plan_json(hcl_code_to_use)
+            # Attempt Native Terraform Pipeline
+            if project.infrastructure_path:
+                from backend.app.engines.terraform_cli import TerraformCLI
+                from backend.app.engines.terraform_plan_adapter import TerraformPlanAdapter
+                cli_res = TerraformCLI.generate_plan_json(project.infrastructure_path)
+                
+                if cli_res.success:
+                    native_plan_json = cli_res.plan_json
+                    tfplan_json = TerraformPlanAdapter.adapt(native_plan_json)
+                    terraform_evaluation_source = "TERRAFORM_NATIVE_PLAN"
+                else:
+                    # Fail-closed on Terraform processing error
+                    tfplan_json = {"resource_changes": []}
+                    terraform_evaluation_source = "TERRAFORM_NATIVE_PLAN"
+                    terraform_validation_status = cli_res.validation_status
+                    terraform_diagnostics = cli_res.diagnostics
+            else:
+                tfplan_json = TerraformEngine.hcl_to_plan_json(hcl_code_to_use)
         elif not tfplan_json:
             # Generate default plan for project
             default_hcl = TerraformEngine.generate_compliant_hcl({
@@ -60,6 +82,9 @@ class ComplianceEngine:
                 "environment": project.environment
             })
             tfplan_json = TerraformEngine.hcl_to_plan_json(default_hcl)
+
+        # Compute deterministic plan hash
+        plan_hash = hashlib.sha256(json.dumps(native_plan_json or tfplan_json, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
         opa_violations = OPAPolicyEvaluator.evaluate_terraform_plan(tfplan_json)
 
@@ -248,6 +273,11 @@ class ComplianceEngine:
         score = (passed_count / applicable_total * 100.0) if applicable_total > 0 else 100.0
         overall_status = "FAIL" if is_deployment_blocked else ("PASS" if failed_count == 0 and unknown_count == 0 else "REVIEW_REQUIRED")
 
+        # Enforce fail-closed if terraform processing failed
+        if terraform_validation_status != "PASS":
+            is_deployment_blocked = True
+            overall_status = "FAIL"
+
         # 4. Generate Cryptographic Evidence Hash
         infra_hash = compute_infrastructure_hash(hcl_code_to_use or "")
         app_hash = compute_application_hash(project.application_source_path)
@@ -263,6 +293,10 @@ class ComplianceEngine:
             "hcl_code": hcl_code_to_use or "",
             "infrastructure_hash": infra_hash,
             "application_source_hash": app_hash,
+            "plan_hash": plan_hash,
+            "terraform_evaluation_source": terraform_evaluation_source,
+            "terraform_validation_status": terraform_validation_status,
+            "terraform_diagnostics": terraform_diagnostics,
             "opa_violations": opa_violations,
             "sonar_findings": sonar_findings or [],
             "timestamp": datetime.now(timezone.utc).isoformat()

@@ -133,11 +133,18 @@ def apply_deployment(
         
         expected_infra_hash = eval_run.evidence_payload.get("infrastructure_hash")
         expected_app_hash = eval_run.evidence_payload.get("application_source_hash")
+        expected_plan_hash = eval_run.evidence_payload.get("plan_hash")
         
         if current_infra_hash != expected_infra_hash or current_app_hash != expected_app_hash:
             raise HTTPException(
                 status_code=400,
                 detail="Project artifacts changed after compliance evaluation. Re-evaluation required."
+            )
+            
+        if expected_plan_hash is None and eval_run.evidence_payload.get("terraform_evaluation_source") == "TERRAFORM_NATIVE_PLAN":
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid evidence: missing plan hash for native terraform evaluation."
             )
 
     deployment.status = "SUCCESS"
