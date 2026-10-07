@@ -9,7 +9,7 @@ import { DashboardPage } from './pages/Dashboard'
 import { DeployPage } from './pages/Deploy'
 import { DeploymentsPage } from './pages/Deployments'
 import { InfrastructurePage } from './pages/Infrastructure'
-import { LandingPage } from './pages/Landing'
+
 import { LoginPage } from './pages/Login'
 import { PoliciesPage } from './pages/Policies'
 import { ProjectsPage } from './pages/Projects'
@@ -24,7 +24,7 @@ export function AppRoutes() {
       <AuthProvider>
         <Routes>
           {/* Public routes */}
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<LoginPage />} />
 
           {/* Protected application routes */}

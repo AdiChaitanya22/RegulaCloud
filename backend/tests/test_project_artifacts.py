@@ -29,6 +29,8 @@ def user_headers(db):
 
 @pytest.fixture(scope="module")
 def test_project(db):
+    db.query(Project).filter(Project.id == "proj-test-upload").delete()
+    db.commit()
     project = Project(
         id="proj-test-upload",
         name="Test Upload Project",
@@ -293,6 +295,9 @@ def test_successful_rl_remediation_creates_audit_entry(auth_headers, test_projec
     assert last_log.resource_id == test_project.id
 
 def test_audit_verification_succeeds_on_intact_chain(auth_headers, test_project, db):
+    from backend.app.db.models import AuditLog
+    db.query(AuditLog).delete()
+    db.commit()
     client.post(
         f"/api/v1/projects/{test_project.id}/remediate",
         json={"action_ids": ["ACT_DISABLE_RDS_PUBLIC"]},
@@ -302,6 +307,8 @@ def test_audit_verification_succeeds_on_intact_chain(auth_headers, test_project,
     res = client.get("/api/v1/audit/verify", headers=auth_headers)
     assert res.status_code == 200
     data = res.json()
+    if not data["valid"]:
+        print("VERIFICATION FAILED:", data)
     assert data["valid"] is True
     assert data["error"] is None
     assert data["entries_checked"] > 0

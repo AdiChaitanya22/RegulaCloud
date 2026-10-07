@@ -51,7 +51,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: true }
       }
       return { success: false, error: 'Invalid username or password.' }
-    } catch {
+    } catch (error: any) {
+      if (error?.status === 401 || error?.status === 403 || (error instanceof Error && error.message.includes('401'))) {
+         return { success: false, error: 'Invalid username or password.' }
+      }
       return { success: false, error: 'Unable to reach the authentication server.' }
     }
   }

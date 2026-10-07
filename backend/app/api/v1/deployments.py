@@ -67,6 +67,8 @@ def create_deployment_plan(payload: Dict[str, Any] = Body(...), current_user: Us
         }
     )
 
+    db.commit()
+
     return {
         "id": dep_id,
         "projectId": project_id,
@@ -121,6 +123,21 @@ def apply_deployment(
             raise HTTPException(
                 status_code=400,
                 detail="One or more statutory requirements are non-compliant or unverified."
+            )
+            
+        # TOCTOU Artifact binding check
+        project = db.query(Project).filter(Project.id == deployment.project_id).first()
+        from backend.app.core.hashing import compute_infrastructure_hash, compute_application_hash
+        current_infra_hash = compute_infrastructure_hash(project.hcl_content or "")
+        current_app_hash = compute_application_hash(project.application_source_path)
+        
+        expected_infra_hash = eval_run.evidence_payload.get("infrastructure_hash")
+        expected_app_hash = eval_run.evidence_payload.get("application_source_hash")
+        
+        if current_infra_hash != expected_infra_hash or current_app_hash != expected_app_hash:
+            raise HTTPException(
+                status_code=400,
+                detail="Project artifacts changed after compliance evaluation. Re-evaluation required."
             )
 
     deployment.status = "SUCCESS"

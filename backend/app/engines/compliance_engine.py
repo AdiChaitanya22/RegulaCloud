@@ -15,6 +15,7 @@ from backend.app.engines.applicability_engine import ApplicabilityEngine
 from backend.app.engines.opa_evaluator import OPAPolicyEvaluator
 from backend.app.engines.sonarqube_client import SonarQubeClient
 from backend.app.engines.terraform_engine import TerraformEngine
+from backend.app.core.hashing import compute_application_hash, compute_infrastructure_hash
 
 class ComplianceEngine:
     """
@@ -136,6 +137,38 @@ class ComplianceEngine:
                                 "explanation": v.get("explanation")
                             })
                             reasons.append(v.get("explanation"))
+                    else:
+                        # Fail-closed check
+                        expected_state = control.expected_state or {}
+                        required_resource_type = expected_state.get("resource_type")
+                        
+                        if required_resource_type:
+                            import re
+                            hcl_resources = set(re.findall(r'resource\s+"([^"]+)"', hcl_code_to_use or ""))
+                            parsed_resources = set(r.get("type") for r in tfplan_json.get("resource_changes", []))
+                            
+                            if required_resource_type not in hcl_resources:
+                                req_status = "FAIL"
+                                reasons.append(f"Required safeguard resource '{required_resource_type}' is missing from the infrastructure.")
+                                req_findings.append({
+                                    "source": "OPA",
+                                    "control_id": control.id,
+                                    "resource": "global",
+                                    "actual": "missing",
+                                    "expected": required_resource_type,
+                                    "explanation": f"Required safeguard '{required_resource_type}' is missing."
+                                })
+                            elif required_resource_type not in parsed_resources:
+                                req_status = "UNKNOWN"
+                                reasons.append(f"Resource '{required_resource_type}' exists but could not be parsed for evaluation.")
+                                req_findings.append({
+                                    "source": "OPA",
+                                    "control_id": control.id,
+                                    "resource": "global",
+                                    "actual": "unparseable",
+                                    "expected": required_resource_type,
+                                    "explanation": f"Required policy could not be evaluated for '{required_resource_type}'."
+                                })
 
                 elif control.verification_source == "SONARQUBE":
                     if sonar_findings is None:
@@ -181,12 +214,44 @@ class ComplianceEngine:
                 "findings": req_findings
             })
 
+        # Check for unmapped resources
+        import re
+        hcl_resources = set(re.findall(r'resource\s+"([^"]+)"', hcl_code_to_use or ""))
+        parsed_resources = set(r.get("type") for r in tfplan_json.get("resource_changes", []))
+        
+        required_resource_types = set()
+        for req in all_db_reqs:
+            if req.id in applicable_req_ids:
+                mappings = db.query(RequirementControlMapping).filter(RequirementControlMapping.requirement_id == req.id).all()
+                for m in mappings:
+                    control = db.query(TechnicalControl).filter(TechnicalControl.id == m.control_id).first()
+                    if control and control.verification_source == "OPA_TERRAFORM":
+                        rtype = (control.expected_state or {}).get("resource_type")
+                        if rtype:
+                            required_resource_types.add(rtype)
+
+        unsupported_resources = hcl_resources - required_resource_types
+        for ur in unsupported_resources:
+            req_evaluations.append({
+                "requirement_id": f"UNSUPPORTED-{ur.upper()}",
+                "title": f"Unsupported Resource: {ur}",
+                "regulation_id": "SYSTEM",
+                "status": "NOT_APPLICABLE",
+                "mandatory": False,
+                "reason": f"Resource '{ur}' has no applicable policy.",
+                "findings": []
+            })
+            not_applicable_count += 1
+
         # Calculate compliance score
         applicable_total = passed_count + failed_count + unknown_count
         score = (passed_count / applicable_total * 100.0) if applicable_total > 0 else 100.0
         overall_status = "FAIL" if is_deployment_blocked else ("PASS" if failed_count == 0 and unknown_count == 0 else "REVIEW_REQUIRED")
 
         # 4. Generate Cryptographic Evidence Hash
+        infra_hash = compute_infrastructure_hash(hcl_code_to_use or "")
+        app_hash = compute_application_hash(project.application_source_path)
+
         evidence_payload = {
             "project_id": project_id,
             "score": score,
@@ -196,6 +261,8 @@ class ComplianceEngine:
             "failed": failed_count,
             "unknown": unknown_count,
             "hcl_code": hcl_code_to_use or "",
+            "infrastructure_hash": infra_hash,
+            "application_source_hash": app_hash,
             "opa_violations": opa_violations,
             "sonar_findings": sonar_findings or [],
             "timestamp": datetime.now(timezone.utc).isoformat()

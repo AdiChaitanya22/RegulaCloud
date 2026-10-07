@@ -91,12 +91,34 @@ def secure_filename(filename: str) -> str:
     return filename.strip('_.-')
 
 def extract_safe_zip(zip_path: str, extract_to: str):
+    MAX_FILES = 1000
+    MAX_TOTAL_SIZE = 100 * 1024 * 1024  # 100 MB
+    
+    total_size = 0
+    extracted_count = 0
+    base_path = os.path.abspath(extract_to)
+    
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         for member in zip_ref.namelist():
-            # Basic path traversal protection
-            if member.startswith("/") or ".." in member:
+            if extracted_count >= MAX_FILES:
+                raise HTTPException(status_code=400, detail="Too many files in ZIP archive.")
+                
+            info = zip_ref.getinfo(member)
+            total_size += info.file_size
+            if total_size > MAX_TOTAL_SIZE:
+                raise HTTPException(status_code=400, detail="ZIP archive uncompressed size exceeds limit.")
+                
+            # Path traversal and symlink escape protection
+            target_path = os.path.abspath(os.path.join(base_path, member))
+            if not target_path.startswith(base_path):
                 continue
+                
+            # Disallow symlinks to prevent escaping
+            if hasattr(info, 'external_attr') and (info.external_attr >> 16) & 0xA000 == 0xA000:
+                continue
+                
             zip_ref.extract(member, extract_to)
+            extracted_count += 1
 
 @router.post("/{project_id}/upload/infrastructure")
 async def upload_infrastructure(
@@ -217,7 +239,10 @@ def remediate_project(
     
     if project.application_source_path and app_action_ids:
         app_applied, app_skipped_temp, changed_files = ApplicationRemediator.apply_source_actions(
-            project.application_source_path, app_action_ids
+            source_path=project.application_source_path,
+            action_ids=app_action_ids,
+            db=db,
+            actor=f"user.{current_user.username}"
         )
         app_skipped = app_skipped_temp
     else:

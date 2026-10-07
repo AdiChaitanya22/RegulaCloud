@@ -174,39 +174,48 @@ class AuditLog(Base):
     current_hash = Column(String(64), nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
+    import threading
+    _audit_lock = threading.Lock()
+
     @classmethod
     def create_entry(cls, session, actor: str, action: str, resource_type: str, resource_id: str, severity: str, details: dict):
-        last_entry = session.query(cls).order_by(cls.id.desc()).first()
-        prev_hash = last_entry.current_hash if last_entry else "0" * 64
-        
-        now = datetime.utcnow()
-        entry_payload = {
-            "actor": actor,
-            "action": action,
-            "resource_type": resource_type,
-            "resource_id": resource_id,
-            "severity": severity,
-            "details": details,
-            "previous_hash": prev_hash,
-            "timestamp": now.isoformat()
-        }
-        computed_hash = hashlib.sha256(json.dumps(entry_payload, sort_keys=True).encode()).hexdigest()
-        
-        log = cls(
-            actor=actor,
-            action=action,
-            resource_type=resource_type,
-            resource_id=resource_id,
-            severity=severity,
-            details=details,
-            previous_hash=prev_hash,
-            current_hash=computed_hash,
-            timestamp=now
-        )
-        session.add(log)
-        session.commit()
-        return log
-
+        from backend.app.core.database import SessionLocal
+        with cls._audit_lock:
+            # Use an independent session to ensure we see the absolute latest committed hash
+            # and to avoid committing the caller's incomplete transaction prematurely.
+            with SessionLocal() as independent_session:
+                last_entry = independent_session.query(cls).order_by(cls.id.desc()).first()
+                prev_hash = last_entry.current_hash if last_entry else "0" * 64
+                
+                now = datetime.utcnow()
+                entry_payload = {
+                    "actor": actor,
+                    "action": action,
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "severity": severity,
+                    "details": details,
+                    "previous_hash": prev_hash,
+                    "timestamp": now.isoformat()
+                }
+                computed_hash = hashlib.sha256(json.dumps(entry_payload, sort_keys=True).encode()).hexdigest()
+                
+                log = cls(
+                    actor=actor,
+                    action=action,
+                    resource_type=resource_type,
+                    resource_id=resource_id,
+                    severity=severity,
+                    details=details,
+                    previous_hash=prev_hash,
+                    current_hash=computed_hash,
+                    timestamp=now
+                )
+                independent_session.add(log)
+                independent_session.commit()
+                independent_session.refresh(log)
+                
+            return log
 
 class ComplianceReport(Base):
     __tablename__ = "compliance_reports"

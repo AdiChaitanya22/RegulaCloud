@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { useNavigate, useLocation, Link, Navigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ShieldCheck, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 export function LoginPage() {
-  const { login } = useAuth()
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -17,6 +17,20 @@ export function LoginPage() {
 
   // After login, redirect to the page the user was trying to reach, or /dashboard
   const from = (location.state as { from?: string })?.from || '/dashboard'
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#05070A] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+        </div>
+      </div>
+    )
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to={from} replace />
+  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
