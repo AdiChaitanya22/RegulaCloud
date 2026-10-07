@@ -1,16 +1,9 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
-const data = [
-  { name: 'Jan', score: 71 },
-  { name: 'Feb', score: 74 },
-  { name: 'Mar', score: 78 },
-  { name: 'Apr', score: 82 },
-  { name: 'May', score: 88 },
-  { name: 'Jun', score: 90 },
-  { name: 'Jul', score: 94 },
-]
-
-export function ComplianceTrend() {
+export function ComplianceTrend({ data = [] }: { data?: any[] }) {
+  if (!data || data.length === 0) {
+    return <div className="h-64 w-full flex items-center justify-center text-slate-500">No data available</div>
+  }
   return (
     <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -22,8 +15,8 @@ export function ComplianceTrend() {
             </linearGradient>
           </defs>
           <CartesianGrid stroke="#1C2633" strokeDasharray="4 4" vertical={false} />
-          <XAxis dataKey="name" stroke="#64748b" tickLine={false} axisLine={false} />
-          <YAxis stroke="#64748b" tickLine={false} axisLine={false} domain={[60, 100]} />
+          <XAxis dataKey="date" stroke="#64748b" tickLine={false} axisLine={false} />
+          <YAxis stroke="#64748b" tickLine={false} axisLine={false} domain={[0, 100]} />
           <Tooltip
             contentStyle={{
               background: '#111720',

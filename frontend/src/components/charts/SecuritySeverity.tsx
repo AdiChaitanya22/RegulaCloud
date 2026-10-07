@@ -1,13 +1,9 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip, Legend } from 'recharts'
 
-const data = [
-  { name: 'Critical', value: 3, color: '#EF4444' },
-  { name: 'High', value: 7, color: '#F59E0B' },
-  { name: 'Medium', value: 12, color: '#EAB308' },
-  { name: 'Low', value: 18, color: '#3B82F6' },
-]
-
-export function SecuritySeverity() {
+export function SecuritySeverity({ data = [] }: { data?: any[] }) {
+  if (!data || data.length === 0) {
+    return <div className="h-64 w-full flex items-center justify-center text-slate-500">No data available</div>
+  }
   return (
     <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -21,9 +17,14 @@ export function SecuritySeverity() {
             paddingAngle={4}
             dataKey="value"
           >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
+            {data.map((entry, index) => {
+              let color = '#3B82F6'
+              if (entry.name === 'Pass') color = '#10B981'
+              else if (entry.name === 'Fail') color = '#EF4444'
+              else if (entry.name === 'Unknown') color = '#F59E0B'
+              else if (entry.name === 'Not Applicable') color = '#64748b'
+              return <Cell key={`cell-${index}`} fill={color} />
+            })}
           </Pie>
           <Tooltip
             contentStyle={{

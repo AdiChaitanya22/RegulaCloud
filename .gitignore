@@ -37,3 +37,4 @@ backend/app/engines/.terraform_cache/
 *.tfplan
 crash.log
 crash.*.log
+backend/uploads/

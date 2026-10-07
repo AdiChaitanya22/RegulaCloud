@@ -191,6 +191,40 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "{b}_crypto" {{
                 new_hcl = re.sub(r'resource\s+"aws_cloudtrail"\s+"([^"]+)"\s*\{([^}]+)\}', repl_trail, new_hcl)
                 applied_actions.append(action)
 
+            elif action == "ACT_ENFORCE_IMDSV2":
+                def repl_imds(match):
+                    body = match.group(2)
+                    if "metadata_options" in body:
+                        # Simple mock update if it exists
+                        body = re.sub(r'http_tokens\s*=\s*"[^"]+"', 'http_tokens = "required"', body)
+                    else:
+                        body = body.rstrip() + '\n  metadata_options {\n    http_tokens = "required"\n  }\n'
+                    return f'resource "aws_instance" "{match.group(1)}" {{{body}}}'
+                new_hcl = re.sub(r'resource\s+"aws_instance"\s+"([^"]+)"\s*\{([^}]+)\}', repl_imds, new_hcl)
+                applied_actions.append(action)
+
+            elif action == "ACT_ENABLE_EBS_ENC":
+                def repl_ebs(match):
+                    body = match.group(2)
+                    if "encrypted" in body:
+                        body = re.sub(r'encrypted\s*=\s*(true|false)', 'encrypted = true', body)
+                    else:
+                        body = body.rstrip() + "\n  encrypted = true\n"
+                    return f'resource "aws_ebs_volume" "{match.group(1)}" {{{body}}}'
+                new_hcl = re.sub(r'resource\s+"aws_ebs_volume"\s+"([^"]+)"\s*\{([^}]+)\}', repl_ebs, new_hcl)
+                applied_actions.append(action)
+
+            elif action == "ACT_ENABLE_KMS_ROTATION":
+                def repl_kms(match):
+                    body = match.group(2)
+                    if "enable_key_rotation" in body:
+                        body = re.sub(r'enable_key_rotation\s*=\s*(true|false)', 'enable_key_rotation = true', body)
+                    else:
+                        body = body.rstrip() + "\n  enable_key_rotation = true\n"
+                    return f'resource "aws_kms_key" "{match.group(1)}" {{{body}}}'
+                new_hcl = re.sub(r'resource\s+"aws_kms_key"\s+"([^"]+)"\s*\{([^}]+)\}', repl_kms, new_hcl)
+                applied_actions.append(action)
+
             elif action in ["ACT_UPGRADE_WEAK_CRYPTO", "ACT_PATCH_SONAR_INJECTION"]:
                 # Will be handled by ApplicationRemediator
                 pass

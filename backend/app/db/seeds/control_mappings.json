@@ -100,7 +100,10 @@
       "verification_source": "OPA_TERRAFORM",
       "expected_state": {
         "resource_type": "aws_vpc_dhcp_options",
-        "ntp_servers": ["time.nplindia.org", "samay1.nic.in"]
+        "ntp_servers": [
+          "time.nplindia.org",
+          "samay1.nic.in"
+        ]
       }
     },
     {
@@ -121,7 +124,77 @@
       "description": "Verifies that SonarQube detects zero open security hotspots or CWE-89 / CWE-79 injection vulnerabilities.",
       "verification_source": "SONARQUBE",
       "expected_state": {
-        "cwe_violations_disallowed": ["CWE-89", "CWE-79", "CWE-78"]
+        "cwe_violations_disallowed": [
+          "CWE-89",
+          "CWE-79",
+          "CWE-78"
+        ]
+      }
+    },
+    {
+      "id": "CTRL-AWS-EC2-IMDSV2",
+      "name": "EC2 Instance Metadata Service v2 Enforcement",
+      "category": "ComputeSecurity",
+      "description": "Enforces that IMDSv2 is required to prevent SSRF attacks.",
+      "verification_source": "OPA_TERRAFORM",
+      "expected_state": {
+        "resource_type": "aws_instance",
+        "metadata_options_http_tokens": "required"
+      }
+    },
+    {
+      "id": "CTRL-AWS-EBS-ENC",
+      "name": "EBS Volume Encryption at Rest",
+      "category": "Cryptography",
+      "description": "Ensures EBS volumes are encrypted to satisfy DPDP storage encryption requirements.",
+      "verification_source": "OPA_TERRAFORM",
+      "expected_state": {
+        "resource_type": "aws_ebs_volume",
+        "encrypted": true
+      }
+    },
+    {
+      "id": "CTRL-AWS-KMS-ROTATION",
+      "name": "KMS Key Automatic Rotation",
+      "category": "Cryptography",
+      "description": "Ensures KMS keys have automatic key rotation enabled.",
+      "verification_source": "OPA_TERRAFORM",
+      "expected_state": {
+        "resource_type": "aws_kms_key",
+        "enable_key_rotation": true
+      }
+    },
+    {
+      "id": "CTRL-AWS-SG-NO-OPEN-SSH",
+      "name": "Security Group No Open SSH",
+      "category": "AccessControl",
+      "description": "Ensures Security Groups do not allow unrestricted SSH access from the internet.",
+      "verification_source": "OPA_TERRAFORM",
+      "expected_state": {
+        "resource_type": "aws_security_group",
+        "no_open_ssh": true
+      }
+    },
+    {
+      "id": "CTRL-AWS-SG-NO-OPEN-RDP",
+      "name": "Security Group No Open RDP",
+      "category": "AccessControl",
+      "description": "Ensures Security Groups do not allow unrestricted RDP access from the internet.",
+      "verification_source": "OPA_TERRAFORM",
+      "expected_state": {
+        "resource_type": "aws_security_group",
+        "no_open_rdp": true
+      }
+    },
+    {
+      "id": "CTRL-AWS-IAM-NO-WILDCARD",
+      "name": "IAM Policy No Wildcard Actions",
+      "category": "AccessControl",
+      "description": "Ensures IAM policies adhere to least privilege and avoid wildcard actions.",
+      "verification_source": "OPA_TERRAFORM",
+      "expected_state": {
+        "resource_type": "aws_iam_policy",
+        "no_wildcard": true
       }
     }
   ],
@@ -185,6 +258,36 @@
       "requirement_id": "CERTIN-2022-INCIDENT-LOGS",
       "control_id": "CTRL-AWS-CLOUDTRAIL-MULTI",
       "mapping_rationale": "Multi-region CloudTrail logging provides the required incident audit trail for 6-hour response obligations."
+    },
+    {
+      "requirement_id": "DPDP-2023-SEC8.5",
+      "control_id": "CTRL-AWS-EC2-IMDSV2",
+      "mapping_rationale": "Mandatory instance metadata protection satisfies reasonable safeguards under Section 8(5) of DPDPA 2023."
+    },
+    {
+      "requirement_id": "DPDP-2023-SEC8.5",
+      "control_id": "CTRL-AWS-EBS-ENC",
+      "mapping_rationale": "Mandatory storage encryption at rest satisfies reasonable safeguards under Section 8(5) of DPDPA 2023."
+    },
+    {
+      "requirement_id": "DPDP-2023-SEC8.5",
+      "control_id": "CTRL-AWS-KMS-ROTATION",
+      "mapping_rationale": "Key rotation ensures long-term cryptographic integrity under Section 8(5)."
+    },
+    {
+      "requirement_id": "DPDP-2023-SEC8.1",
+      "control_id": "CTRL-AWS-SG-NO-OPEN-SSH",
+      "mapping_rationale": "Restricting open SSH access satisfies reasonable isolation boundaries."
+    },
+    {
+      "requirement_id": "DPDP-2023-SEC8.1",
+      "control_id": "CTRL-AWS-SG-NO-OPEN-RDP",
+      "mapping_rationale": "Restricting open RDP access satisfies reasonable isolation boundaries."
+    },
+    {
+      "requirement_id": "DPDPR-2025-R6.1",
+      "control_id": "CTRL-AWS-IAM-NO-WILDCARD",
+      "mapping_rationale": "IAM least privilege satisfies administrative access control under Rule 6(1)."
     }
   ]
 }

@@ -73,6 +73,30 @@ class QLearningRemediationAgent:
             "cost_penalty": 0,
             "complexity_penalty": 4,
             "hcl_diff": '// Replace legacy DES with AES-256-GCM authenticated cipher\n- SecretKeySpec key = new SecretKeySpec(keyBytes, "DES");\n- Cipher cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");\n+ SecretKeySpec key = new SecretKeySpec(keyBytes, "AES");\n+ Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");'
+        },
+        {
+            "id": "ACT_ENFORCE_IMDSV2",
+            "name": "Enforce EC2 IMDSv2",
+            "target_control": "CTRL-AWS-EC2-IMDSV2",
+            "cost_penalty": 0,
+            "complexity_penalty": 2,
+            "hcl_diff": 'resource "aws_instance" "app" {\n+  metadata_options {\n+    http_tokens = "required"\n+  }\n}'
+        },
+        {
+            "id": "ACT_ENABLE_EBS_ENC",
+            "name": "Enable EBS Volume Encryption",
+            "target_control": "CTRL-AWS-EBS-ENC",
+            "cost_penalty": 1,
+            "complexity_penalty": 1,
+            "hcl_diff": 'resource "aws_ebs_volume" "data" {\n+  encrypted = true\n}'
+        },
+        {
+            "id": "ACT_ENABLE_KMS_ROTATION",
+            "name": "Enable KMS Key Rotation",
+            "target_control": "CTRL-AWS-KMS-ROTATION",
+            "cost_penalty": 1,
+            "complexity_penalty": 1,
+            "hcl_diff": 'resource "aws_kms_key" "key" {\n+  enable_key_rotation = true\n}'
         }
     ]
 

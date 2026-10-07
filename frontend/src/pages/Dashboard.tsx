@@ -16,8 +16,6 @@ import { StatCard } from '../components/ui/stat-card'
 import { AnimatedCounter } from '../components/ui/animated-counter'
 import { ComplianceTrend } from '../components/charts/ComplianceTrend'
 import { SecuritySeverity } from '../components/charts/SecuritySeverity'
-import { DeploymentActivity } from '../components/charts/DeploymentActivity'
-import { ResourceDistribution } from '../components/charts/ResourceDistribution'
 import { request } from '../services/api'
 import { complianceService } from '../services/complianceService'
 import { useProject } from '../context/ProjectContext'
@@ -116,7 +114,7 @@ export function DashboardPage() {
         <StatCard
           label="Active Controls"
           value={<AnimatedCounter value={stats.monitoredControls} />}
-          trend="Real OPA & Sonar"
+          trend="Real OPA Policies"
           icon={<Activity size={16} />}
         />
         <StatCard
@@ -126,10 +124,10 @@ export function DashboardPage() {
           icon={<CheckCircle2 size={16} />}
         />
         <StatCard
-          label="Policy Violations"
-          value={<AnimatedCounter value={stats.policyViolations} />}
-          trend={stats.policyViolations === 0 ? 'Gate Passed' : 'Gated / Blocked'}
-          icon={<ShieldAlert size={16} />}
+          label="Resource Coverage"
+          value={<span>{stats.unsupportedResources === 0 ? "100%" : "Partial"}</span>}
+          trend={`${stats.unsupportedResources || 0} Unsupported`}
+          icon={<Activity size={16} />}
         />
       </div>
 
@@ -165,36 +163,17 @@ export function DashboardPage() {
         <Card className="p-5 border border-[#1C2633] bg-[#0B0F14] rounded-3xl">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-lg font-medium text-white">Compliance Trend</h2>
-            <span className="text-xs uppercase tracking-[0.18em] text-emerald-600 font-bold">Stable</span>
+            <span className="text-xs uppercase tracking-[0.18em] text-emerald-600 font-bold">Average Score</span>
           </div>
-          <ComplianceTrend />
+          <ComplianceTrend data={stats.trend} />
         </Card>
 
         <Card className="p-5 border border-[#1C2633] bg-[#0B0F14] rounded-3xl">
           <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-lg font-medium text-white">Security Findings Severity</h2>
-            <span className="text-xs uppercase tracking-[0.18em] text-slate-500 font-bold">Active Findings</span>
+            <h2 className="text-lg font-medium text-white">Control Status Distribution</h2>
+            <span className="text-xs uppercase tracking-[0.18em] text-slate-500 font-bold">Latest Runs</span>
           </div>
-          <SecuritySeverity />
-        </Card>
-      </div>
-
-      {/* Secondary Charts Section */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="p-5 border border-[#1C2633] bg-[#0B0F14] rounded-3xl">
-          <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-lg font-medium text-white">Deployment Activity</h2>
-            <span className="text-xs uppercase tracking-[0.18em] text-slate-500 font-bold">Weekly successful vs failed</span>
-          </div>
-          <DeploymentActivity />
-        </Card>
-
-        <Card className="p-5 border border-[#1C2633] bg-[#0B0F14] rounded-3xl">
-          <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-lg font-medium text-white">Resource Allocation</h2>
-            <span className="text-xs uppercase tracking-[0.18em] text-emerald-600 font-bold">52 Monitored Assets</span>
-          </div>
-          <ResourceDistribution />
+          <SecuritySeverity data={stats.controlDistribution} />
         </Card>
       </div>
 

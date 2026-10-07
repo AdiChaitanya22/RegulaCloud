@@ -17,7 +17,8 @@ from backend.app.api.v1 import (
     reports,
     settings as settings_api,
     drift,
-    ai_copilot
+    ai_copilot,
+    infrastructure
 )
 
 app = FastAPI(
@@ -62,6 +63,7 @@ app.include_router(compliance.router, prefix=settings.API_V1_STR)
 app.include_router(applicability.router, prefix=settings.API_V1_STR)
 app.include_router(policies.router, prefix=settings.API_V1_STR)
 app.include_router(projects.router, prefix=settings.API_V1_STR)
+app.include_router(infrastructure.router, prefix=settings.API_V1_STR)
 app.include_router(remediation_rl.router, prefix=settings.API_V1_STR)
 app.include_router(security_sonar.router, prefix=settings.API_V1_STR)
 app.include_router(deployments.router, prefix=settings.API_V1_STR)
