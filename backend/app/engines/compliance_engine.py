@@ -301,6 +301,8 @@ class ComplianceEngine:
             "sonar_findings": sonar_findings or [],
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
+        if native_plan_json is not None:
+            evidence_payload["native_plan_json"] = native_plan_json
         evidence_hash = hashlib.sha256(json.dumps(evidence_payload, sort_keys=True).encode()).hexdigest()
 
         # 5. Persist Evaluation Run to Database

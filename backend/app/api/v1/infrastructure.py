@@ -5,6 +5,7 @@ from backend.app.core.database import get_db
 from backend.app.db.models import Project, EvaluationRun, RequirementEvaluation, TechnicalControl
 from backend.app.core.auth import require_user
 from backend.app.engines.terraform_plan_adapter import TerraformPlanAdapter
+from backend.app.core.hashing import compute_infrastructure_hash
 
 router = APIRouter(prefix="/projects", tags=["Infrastructure Topology"])
 
@@ -88,7 +89,7 @@ def get_infrastructure_topology(project_id: str, current_user=Depends(require_us
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
         
-    if current_user.role != "ADMIN" and project.owner_id != current_user.id:
+    if current_user.role != "ADMIN" and project.owner != current_user.username:
         raise HTTPException(status_code=403, detail="Not authorized to access this project")
 
     latest_run = db.query(EvaluationRun).filter(EvaluationRun.project_id == project_id).order_by(EvaluationRun.evaluated_at.desc()).first()
@@ -98,11 +99,18 @@ def get_infrastructure_topology(project_id: str, current_user=Depends(require_us
             "message": "No infrastructure evaluation is available yet. Run compliance evaluation to generate the native infrastructure model."
         }
 
-    # Stale check
-    is_stale = project.infrastructure_hash != latest_run.infrastructure_hash
+    # Stale check using canonical evidence payload and current artifact
+    evidence = latest_run.evidence_payload or {}
+    current_infra_hash = compute_infrastructure_hash(project.hcl_content or "")
+    evaluated_infra_hash = evidence.get("infrastructure_hash")
+    plan_hash = evidence.get("plan_hash")
+
+    if not evaluated_infra_hash:
+        is_stale = True
+    else:
+        is_stale = (current_infra_hash != evaluated_infra_hash)
 
     # Extract Native Plan
-    evidence = latest_run.evidence_payload or {}
     native_plan = evidence.get("native_plan_json", {})
     if not native_plan:
         return {
@@ -208,8 +216,8 @@ def get_infrastructure_topology(project_id: str, current_user=Depends(require_us
         "project_name": project.name,
         "evaluation_run_id": latest_run.id,
         "evaluation_source": "TERRAFORM_NATIVE_PLAN",
-        "infrastructure_hash": project.infrastructure_hash,
-        "plan_hash": latest_run.plan_hash,
+        "infrastructure_hash": current_infra_hash,
+        "plan_hash": plan_hash,
         "stale": is_stale,
         "resources": nodes,
         "edges": valid_edges,

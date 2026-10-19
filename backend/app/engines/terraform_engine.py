@@ -174,6 +174,40 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "{b}_crypto" {{
                         new_hcl += "\n" + enc_block
                 applied_actions.append(action)
 
+            elif action == "ACT_BLOCK_S3_PUBLIC":
+                has_pab = bool(re.search(r'resource\s+"aws_s3_bucket_public_access_block"', new_hcl))
+                if has_pab:
+                    def repl_s3_pab(match):
+                        res_name = match.group(1)
+                        body = match.group(2)
+                        attrs = ["block_public_acls", "block_public_policy", "ignore_public_acls", "restrict_public_buckets"]
+                        for attr in attrs:
+                            if re.search(rf'{attr}\s*=\s*(?:true|false)', body):
+                                body = re.sub(rf'{attr}\s*=\s*(?:true|false)', f'{attr} = true', body)
+                            elif f"{attr}" not in body:
+                                body = body.rstrip() + f"\n  {attr} = true\n"
+                        return f'resource "aws_s3_bucket_public_access_block" "{res_name}" {{{body}}}'
+                    
+                    new_hcl = re.sub(r'resource\s+"aws_s3_bucket_public_access_block"\s+"([^"]+)"\s*\{([^}]+)\}', repl_s3_pab, new_hcl)
+
+                # For any S3 buckets lacking a public access block, append one
+                s3_matches = re.finditer(r'resource\s+"aws_s3_bucket"\s+"([^"]+)"', new_hcl)
+                buckets = [m.group(1) for m in s3_matches]
+                for b in buckets:
+                    bucket_ref = rf'aws_s3_bucket\.{b}\.id'
+                    if not re.search(rf'resource\s+"aws_s3_bucket_public_access_block"\s+"[^"]+"\s*\{{[^}}]+bucket\s*=\s*{bucket_ref}', new_hcl):
+                        pab_block = f"""
+resource "aws_s3_bucket_public_access_block" "{b}_pab" {{
+  bucket                  = aws_s3_bucket.{b}.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}}"""
+                        new_hcl += "\n" + pab_block
+
+                applied_actions.append(action)
+
             elif action == "ACT_ENABLE_CLOUDTRAIL_MULTI":
                 def repl_trail(match):
                     body = match.group(2)
