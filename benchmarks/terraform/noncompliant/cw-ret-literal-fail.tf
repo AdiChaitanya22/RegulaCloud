@@ -1,0 +1,1 @@
+resource "aws_cloudwatch_log_group" "lg" { retention_in_days = 90 }

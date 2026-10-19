@@ -1,0 +1,1 @@
+class Test { void run() { Cipher c = Cipher.getInstance("DES"); } }

@@ -1,0 +1,212 @@
+[
+  {
+    "active_violations": [
+      "violation_1"
+    ],
+    "description": "Representative state 1",
+    "state_id": "state_1"
+  },
+  {
+    "active_violations": [
+      "violation_2"
+    ],
+    "description": "Representative state 2",
+    "state_id": "state_2"
+  },
+  {
+    "active_violations": [
+      "violation_3"
+    ],
+    "description": "Representative state 3",
+    "state_id": "state_3"
+  },
+  {
+    "active_violations": [
+      "violation_4"
+    ],
+    "description": "Representative state 4",
+    "state_id": "state_4"
+  },
+  {
+    "active_violations": [
+      "violation_5"
+    ],
+    "description": "Representative state 5",
+    "state_id": "state_5"
+  },
+  {
+    "active_violations": [
+      "violation_6"
+    ],
+    "description": "Representative state 6",
+    "state_id": "state_6"
+  },
+  {
+    "active_violations": [
+      "violation_7"
+    ],
+    "description": "Representative state 7",
+    "state_id": "state_7"
+  },
+  {
+    "active_violations": [
+      "violation_8"
+    ],
+    "description": "Representative state 8",
+    "state_id": "state_8"
+  },
+  {
+    "active_violations": [
+      "violation_9"
+    ],
+    "description": "Representative state 9",
+    "state_id": "state_9"
+  },
+  {
+    "active_violations": [
+      "violation_0"
+    ],
+    "description": "Representative state 10",
+    "state_id": "state_10"
+  },
+  {
+    "active_violations": [
+      "violation_1"
+    ],
+    "description": "Representative state 11",
+    "state_id": "state_11"
+  },
+  {
+    "active_violations": [
+      "violation_2"
+    ],
+    "description": "Representative state 12",
+    "state_id": "state_12"
+  },
+  {
+    "active_violations": [
+      "violation_3"
+    ],
+    "description": "Representative state 13",
+    "state_id": "state_13"
+  },
+  {
+    "active_violations": [
+      "violation_4"
+    ],
+    "description": "Representative state 14",
+    "state_id": "state_14"
+  },
+  {
+    "active_violations": [
+      "violation_5"
+    ],
+    "description": "Representative state 15",
+    "state_id": "state_15"
+  },
+  {
+    "active_violations": [
+      "violation_6"
+    ],
+    "description": "Representative state 16",
+    "state_id": "state_16"
+  },
+  {
+    "active_violations": [
+      "violation_7"
+    ],
+    "description": "Representative state 17",
+    "state_id": "state_17"
+  },
+  {
+    "active_violations": [
+      "violation_8"
+    ],
+    "description": "Representative state 18",
+    "state_id": "state_18"
+  },
+  {
+    "active_violations": [
+      "violation_9"
+    ],
+    "description": "Representative state 19",
+    "state_id": "state_19"
+  },
+  {
+    "active_violations": [
+      "violation_0"
+    ],
+    "description": "Representative state 20",
+    "state_id": "state_20"
+  },
+  {
+    "active_violations": [
+      "violation_1"
+    ],
+    "description": "Representative state 21",
+    "state_id": "state_21"
+  },
+  {
+    "active_violations": [
+      "violation_2"
+    ],
+    "description": "Representative state 22",
+    "state_id": "state_22"
+  },
+  {
+    "active_violations": [
+      "violation_3"
+    ],
+    "description": "Representative state 23",
+    "state_id": "state_23"
+  },
+  {
+    "active_violations": [
+      "violation_4"
+    ],
+    "description": "Representative state 24",
+    "state_id": "state_24"
+  },
+  {
+    "active_violations": [
+      "violation_5"
+    ],
+    "description": "Representative state 25",
+    "state_id": "state_25"
+  },
+  {
+    "active_violations": [
+      "violation_6"
+    ],
+    "description": "Representative state 26",
+    "state_id": "state_26"
+  },
+  {
+    "active_violations": [
+      "violation_7"
+    ],
+    "description": "Representative state 27",
+    "state_id": "state_27"
+  },
+  {
+    "active_violations": [
+      "violation_8"
+    ],
+    "description": "Representative state 28",
+    "state_id": "state_28"
+  },
+  {
+    "active_violations": [
+      "violation_9"
+    ],
+    "description": "Representative state 29",
+    "state_id": "state_29"
+  },
+  {
+    "active_violations": [
+      "violation_0"
+    ],
+    "description": "Representative state 30",
+    "state_id": "state_30"
+  }
+]

@@ -1,0 +1,1 @@
+resource "aws_instance" "i" { ami = "ami-123" }

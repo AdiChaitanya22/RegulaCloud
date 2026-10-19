@@ -1,0 +1,1 @@
+class Test { void run(String u) { String q = "SELECT * FROM users WHERE id = " + u; stmt.execute(q); } }

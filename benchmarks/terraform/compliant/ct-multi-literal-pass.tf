@@ -1,0 +1,1 @@
+resource "aws_cloudtrail" "ct" { is_multi_region_trail = true }

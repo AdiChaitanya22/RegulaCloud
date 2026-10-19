@@ -1,0 +1,506 @@
+[
+  {
+    "benchmark_tags": [
+      "literal",
+      "db_instance"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-RDS-NO-PUBLIC",
+    "expected_status": "FAIL",
+    "fixture_id": "rds-public-literal-fail",
+    "path": "benchmarks/terraform/noncompliant/rds-public-literal-fail.tf",
+    "resource_type": "aws_db_instance"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "db_instance"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-RDS-NO-PUBLIC",
+    "expected_status": "PASS",
+    "fixture_id": "rds-public-literal-pass",
+    "path": "benchmarks/terraform/compliant/rds-public-literal-pass.tf",
+    "resource_type": "aws_db_instance"
+  },
+  {
+    "benchmark_tags": [
+      "variable",
+      "db_instance"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-RDS-NO-PUBLIC",
+    "expected_status": "FAIL",
+    "fixture_id": "rds-public-variable-fail",
+    "path": "benchmarks/terraform/edge/rds-public-variable-fail.tf",
+    "resource_type": "aws_db_instance"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "db_instance"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-RDS-STORAGE-ENC",
+    "expected_status": "FAIL",
+    "fixture_id": "rds-enc-literal-fail",
+    "path": "benchmarks/terraform/noncompliant/rds-enc-literal-fail.tf",
+    "resource_type": "aws_db_instance"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "db_instance"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-RDS-STORAGE-ENC",
+    "expected_status": "PASS",
+    "fixture_id": "rds-enc-literal-pass",
+    "path": "benchmarks/terraform/compliant/rds-enc-literal-pass.tf",
+    "resource_type": "aws_db_instance"
+  },
+  {
+    "benchmark_tags": [
+      "local",
+      "db_instance"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-RDS-STORAGE-ENC",
+    "expected_status": "PASS",
+    "fixture_id": "rds-enc-local-pass",
+    "path": "benchmarks/terraform/edge/rds-enc-local-pass.tf",
+    "resource_type": "aws_db_instance"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "s3_bucket"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-S3-ENC",
+    "expected_status": "FAIL",
+    "fixture_id": "s3-enc-literal-fail",
+    "path": "benchmarks/terraform/noncompliant/s3-enc-literal-fail.tf",
+    "resource_type": "aws_s3_bucket"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "s3_bucket"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-S3-ENC",
+    "expected_status": "PASS",
+    "fixture_id": "s3-enc-literal-pass",
+    "path": "benchmarks/terraform/compliant/s3-enc-literal-pass.tf",
+    "resource_type": "aws_s3_bucket"
+  },
+  {
+    "benchmark_tags": [
+      "module",
+      "s3_bucket"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-S3-ENC",
+    "expected_status": "PASS",
+    "fixture_id": "s3-enc-module-pass",
+    "path": "benchmarks/terraform/edge/s3-enc-module-pass.tf",
+    "resource_type": "aws_s3_bucket"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "s3_bucket_public_access_block"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-S3-NO-PUBLIC",
+    "expected_status": "FAIL",
+    "fixture_id": "s3-public-literal-fail",
+    "path": "benchmarks/terraform/noncompliant/s3-public-literal-fail.tf",
+    "resource_type": "aws_s3_bucket_public_access_block"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "s3_bucket_public_access_block"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-S3-NO-PUBLIC",
+    "expected_status": "PASS",
+    "fixture_id": "s3-public-literal-pass",
+    "path": "benchmarks/terraform/compliant/s3-public-literal-pass.tf",
+    "resource_type": "aws_s3_bucket_public_access_block"
+  },
+  {
+    "benchmark_tags": [
+      "conditional",
+      "s3_bucket_public_access_block"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-S3-NO-PUBLIC",
+    "expected_status": "FAIL",
+    "fixture_id": "s3-public-cond-fail",
+    "path": "benchmarks/terraform/edge/s3-public-cond-fail.tf",
+    "resource_type": "aws_s3_bucket_public_access_block"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "cloudwatch_log_group"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-LOG-180D",
+    "expected_status": "FAIL",
+    "fixture_id": "cw-ret-literal-fail",
+    "path": "benchmarks/terraform/noncompliant/cw-ret-literal-fail.tf",
+    "resource_type": "aws_cloudwatch_log_group"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "cloudwatch_log_group"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-LOG-180D",
+    "expected_status": "PASS",
+    "fixture_id": "cw-ret-literal-pass",
+    "path": "benchmarks/terraform/compliant/cw-ret-literal-pass.tf",
+    "resource_type": "aws_cloudwatch_log_group"
+  },
+  {
+    "benchmark_tags": [
+      "count",
+      "cloudwatch_log_group"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-LOG-180D",
+    "expected_status": "FAIL",
+    "fixture_id": "cw-ret-count-fail",
+    "path": "benchmarks/terraform/edge/cw-ret-count-fail.tf",
+    "resource_type": "aws_cloudwatch_log_group"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "cloudtrail"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-CLOUDTRAIL-MULTI",
+    "expected_status": "FAIL",
+    "fixture_id": "ct-multi-literal-fail",
+    "path": "benchmarks/terraform/noncompliant/ct-multi-literal-fail.tf",
+    "resource_type": "aws_cloudtrail"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "cloudtrail"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-CLOUDTRAIL-MULTI",
+    "expected_status": "PASS",
+    "fixture_id": "ct-multi-literal-pass",
+    "path": "benchmarks/terraform/compliant/ct-multi-literal-pass.tf",
+    "resource_type": "aws_cloudtrail"
+  },
+  {
+    "benchmark_tags": [
+      "reference",
+      "cloudtrail"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-CLOUDTRAIL-MULTI",
+    "expected_status": "PASS",
+    "fixture_id": "ct-multi-ref-pass",
+    "path": "benchmarks/terraform/edge/ct-multi-ref-pass.tf",
+    "resource_type": "aws_cloudtrail"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "instance"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-EC2-IMDSV2",
+    "expected_status": "FAIL",
+    "fixture_id": "ec2-imdsv2-literal-fail",
+    "path": "benchmarks/terraform/noncompliant/ec2-imdsv2-literal-fail.tf",
+    "resource_type": "aws_instance"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "instance"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-EC2-IMDSV2",
+    "expected_status": "PASS",
+    "fixture_id": "ec2-imdsv2-literal-pass",
+    "path": "benchmarks/terraform/compliant/ec2-imdsv2-literal-pass.tf",
+    "resource_type": "aws_instance"
+  },
+  {
+    "benchmark_tags": [
+      "nested",
+      "instance"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-EC2-IMDSV2",
+    "expected_status": "FAIL",
+    "fixture_id": "ec2-imdsv2-missing-fail",
+    "path": "benchmarks/terraform/edge/ec2-imdsv2-missing-fail.tf",
+    "resource_type": "aws_instance"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "ebs_volume"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-EBS-ENC",
+    "expected_status": "FAIL",
+    "fixture_id": "ebs-enc-literal-fail",
+    "path": "benchmarks/terraform/noncompliant/ebs-enc-literal-fail.tf",
+    "resource_type": "aws_ebs_volume"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "ebs_volume"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-EBS-ENC",
+    "expected_status": "PASS",
+    "fixture_id": "ebs-enc-literal-pass",
+    "path": "benchmarks/terraform/compliant/ebs-enc-literal-pass.tf",
+    "resource_type": "aws_ebs_volume"
+  },
+  {
+    "benchmark_tags": [
+      "for_each",
+      "ebs_volume"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-EBS-ENC",
+    "expected_status": "PASS",
+    "fixture_id": "ebs-enc-foreach-pass",
+    "path": "benchmarks/terraform/edge/ebs-enc-foreach-pass.tf",
+    "resource_type": "aws_ebs_volume"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "kms_key"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-KMS-ROTATION",
+    "expected_status": "FAIL",
+    "fixture_id": "kms-rot-literal-fail",
+    "path": "benchmarks/terraform/noncompliant/kms-rot-literal-fail.tf",
+    "resource_type": "aws_kms_key"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "kms_key"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-KMS-ROTATION",
+    "expected_status": "PASS",
+    "fixture_id": "kms-rot-literal-pass",
+    "path": "benchmarks/terraform/compliant/kms-rot-literal-pass.tf",
+    "resource_type": "aws_kms_key"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "kms_key"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-KMS-ROTATION",
+    "expected_status": "FAIL",
+    "fixture_id": "kms-rot-missing-fail",
+    "path": "benchmarks/terraform/edge/kms-rot-missing-fail.tf",
+    "resource_type": "aws_kms_key"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "security_group"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-SG-NO-OPEN-SSH",
+    "expected_status": "FAIL",
+    "fixture_id": "sg-ssh-literal-fail",
+    "path": "benchmarks/terraform/noncompliant/sg-ssh-literal-fail.tf",
+    "resource_type": "aws_security_group"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "security_group"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-SG-NO-OPEN-SSH",
+    "expected_status": "PASS",
+    "fixture_id": "sg-ssh-literal-pass",
+    "path": "benchmarks/terraform/compliant/sg-ssh-literal-pass.tf",
+    "resource_type": "aws_security_group"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "security_group"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-SG-NO-OPEN-SSH",
+    "expected_status": "FAIL",
+    "fixture_id": "sg-ssh-ipv6-fail",
+    "path": "benchmarks/terraform/edge/sg-ssh-ipv6-fail.tf",
+    "resource_type": "aws_security_group"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "security_group"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-SG-NO-OPEN-RDP",
+    "expected_status": "FAIL",
+    "fixture_id": "sg-rdp-literal-fail",
+    "path": "benchmarks/terraform/noncompliant/sg-rdp-literal-fail.tf",
+    "resource_type": "aws_security_group"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "security_group"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-SG-NO-OPEN-RDP",
+    "expected_status": "PASS",
+    "fixture_id": "sg-rdp-literal-pass",
+    "path": "benchmarks/terraform/compliant/sg-rdp-literal-pass.tf",
+    "resource_type": "aws_security_group"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "security_group"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-SG-NO-OPEN-RDP",
+    "expected_status": "FAIL",
+    "fixture_id": "sg-rdp-range-fail",
+    "path": "benchmarks/terraform/edge/sg-rdp-range-fail.tf",
+    "resource_type": "aws_security_group"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "iam_policy"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-IAM-NO-WILDCARD",
+    "expected_status": "FAIL",
+    "fixture_id": "iam-wild-literal-fail",
+    "path": "benchmarks/terraform/noncompliant/iam-wild-literal-fail.tf",
+    "resource_type": "aws_iam_policy"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "iam_policy"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-IAM-NO-WILDCARD",
+    "expected_status": "PASS",
+    "fixture_id": "iam-wild-literal-pass",
+    "path": "benchmarks/terraform/compliant/iam-wild-literal-pass.tf",
+    "resource_type": "aws_iam_policy"
+  },
+  {
+    "benchmark_tags": [
+      "literal",
+      "iam_policy"
+    ],
+    "category": "terraform_detection",
+    "control_id": "CTRL-AWS-IAM-NO-WILDCARD",
+    "expected_status": "PASS",
+    "fixture_id": "iam-wild-s3-pass",
+    "path": "benchmarks/terraform/edge/iam-wild-s3-pass.tf",
+    "resource_type": "aws_iam_policy"
+  },
+  {
+    "benchmark_tags": [
+      "concat",
+      "java"
+    ],
+    "category": "application_detection",
+    "control_id": "CTRL-APP-JAVA-SQLI",
+    "expected_status": "FAIL",
+    "fixture_id": "sqli-concat-fail",
+    "path": "benchmarks/application/vulnerable/sqli-concat-fail.java",
+    "resource_type": "java"
+  },
+  {
+    "benchmark_tags": [
+      "prepared",
+      "java"
+    ],
+    "category": "application_detection",
+    "control_id": "CTRL-APP-JAVA-SQLI",
+    "expected_status": "PASS",
+    "fixture_id": "sqli-param-pass",
+    "path": "benchmarks/application/compliant/sqli-param-pass.java",
+    "resource_type": "java"
+  },
+  {
+    "benchmark_tags": [
+      "comment",
+      "java"
+    ],
+    "category": "application_detection",
+    "control_id": "CTRL-APP-JAVA-SQLI",
+    "expected_status": "PASS",
+    "fixture_id": "sqli-comment-pass",
+    "path": "benchmarks/application/edge/sqli-comment-pass.java",
+    "resource_type": "java"
+  },
+  {
+    "benchmark_tags": [
+      "des",
+      "java"
+    ],
+    "category": "application_detection",
+    "control_id": "CTRL-APP-JAVA-CRYPTO",
+    "expected_status": "FAIL",
+    "fixture_id": "crypto-des-fail",
+    "path": "benchmarks/application/vulnerable/crypto-des-fail.java",
+    "resource_type": "java"
+  },
+  {
+    "benchmark_tags": [
+      "aes",
+      "java"
+    ],
+    "category": "application_detection",
+    "control_id": "CTRL-APP-JAVA-CRYPTO",
+    "expected_status": "PASS",
+    "fixture_id": "crypto-aes-pass",
+    "path": "benchmarks/application/compliant/crypto-aes-pass.java",
+    "resource_type": "java"
+  },
+  {
+    "benchmark_tags": [
+      "doc",
+      "java"
+    ],
+    "category": "application_detection",
+    "control_id": "CTRL-APP-JAVA-CRYPTO",
+    "expected_status": "PASS",
+    "fixture_id": "crypto-doc-pass",
+    "path": "benchmarks/application/edge/crypto-doc-pass.java",
+    "resource_type": "java"
+  }
+]

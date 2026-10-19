@@ -1,0 +1,1 @@
+resource "aws_instance" "i" { metadata_options { http_tokens = "optional" } }
