@@ -1,0 +1,1019 @@
+[
+  {
+    "state_id": "v2_state_01",
+    "density_class": "single",
+    "active_action_indices": [
+      0
+    ],
+    "active_action_ids": [
+      "ACT_DISABLE_RDS_PUBLIC"
+    ],
+    "active_controls": [
+      "CTRL-AWS-RDS-NO-PUBLIC"
+    ],
+    "binary_state": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "description": "Single violation: RDS public ingress exposed"
+  },
+  {
+    "state_id": "v2_state_02",
+    "density_class": "single",
+    "active_action_indices": [
+      2
+    ],
+    "active_action_ids": [
+      "ACT_ENABLE_S3_ENC"
+    ],
+    "active_controls": [
+      "CTRL-AWS-S3-ENC"
+    ],
+    "binary_state": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "description": "Single violation: S3 bucket unencrypted"
+  },
+  {
+    "state_id": "v2_state_03",
+    "density_class": "single",
+    "active_action_indices": [
+      4
+    ],
+    "active_action_ids": [
+      "ACT_EXTEND_LOG_RETENTION_180"
+    ],
+    "active_controls": [
+      "CTRL-AWS-LOG-180D"
+    ],
+    "binary_state": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "description": "Single violation: CloudWatch retention below 180 days"
+  },
+  {
+    "state_id": "v2_state_04",
+    "density_class": "single",
+    "active_action_indices": [
+      6
+    ],
+    "active_action_ids": [
+      "ACT_PATCH_SONAR_INJECTION"
+    ],
+    "active_controls": [
+      "CTRL-SONAR-INJECTION-FREE"
+    ],
+    "binary_state": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "description": "Single violation: Application SQL injection vulnerability"
+  },
+  {
+    "state_id": "v2_state_05",
+    "density_class": "single",
+    "active_action_indices": [
+      8
+    ],
+    "active_action_ids": [
+      "ACT_ENFORCE_IMDSV2"
+    ],
+    "active_controls": [
+      "CTRL-AWS-EC2-IMDSV2"
+    ],
+    "binary_state": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0
+    ],
+    "description": "Single violation: EC2 instance without IMDSv2 enforcement"
+  },
+  {
+    "state_id": "v2_state_06",
+    "density_class": "dual",
+    "active_action_indices": [
+      0,
+      1
+    ],
+    "active_action_ids": [
+      "ACT_DISABLE_RDS_PUBLIC",
+      "ACT_ENABLE_RDS_ENC"
+    ],
+    "active_controls": [
+      "CTRL-AWS-RDS-NO-PUBLIC",
+      "CTRL-AWS-RDS-STORAGE-ENC"
+    ],
+    "binary_state": [
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "description": "Dual violation: RDS public ingress and unencrypted storage"
+  },
+  {
+    "state_id": "v2_state_07",
+    "density_class": "dual",
+    "active_action_indices": [
+      2,
+      3
+    ],
+    "active_action_ids": [
+      "ACT_ENABLE_S3_ENC",
+      "ACT_BLOCK_S3_PUBLIC"
+    ],
+    "active_controls": [
+      "CTRL-AWS-S3-ENC",
+      "CTRL-AWS-S3-NO-PUBLIC"
+    ],
+    "binary_state": [
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "description": "Dual violation: S3 unencrypted and missing public access block"
+  },
+  {
+    "state_id": "v2_state_08",
+    "density_class": "dual",
+    "active_action_indices": [
+      4,
+      5
+    ],
+    "active_action_ids": [
+      "ACT_EXTEND_LOG_RETENTION_180",
+      "ACT_ENABLE_CLOUDTRAIL_MULTI"
+    ],
+    "active_controls": [
+      "CTRL-AWS-LOG-180D",
+      "CTRL-AWS-CLOUDTRAIL-MULTI"
+    ],
+    "binary_state": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "description": "Dual violation: CloudWatch retention short and CloudTrail multi-region disabled"
+  },
+  {
+    "state_id": "v2_state_09",
+    "density_class": "dual",
+    "active_action_indices": [
+      6,
+      7
+    ],
+    "active_action_ids": [
+      "ACT_PATCH_SONAR_INJECTION",
+      "ACT_UPGRADE_WEAK_CRYPTO"
+    ],
+    "active_controls": [
+      "CTRL-SONAR-INJECTION-FREE",
+      "CTRL-SONAR-ZERO-CRITICAL"
+    ],
+    "binary_state": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0
+    ],
+    "description": "Dual violation: Application SQLi and weak DES crypto"
+  },
+  {
+    "state_id": "v2_state_10",
+    "density_class": "dual",
+    "active_action_indices": [
+      8,
+      9
+    ],
+    "active_action_ids": [
+      "ACT_ENFORCE_IMDSV2",
+      "ACT_ENABLE_EBS_ENC"
+    ],
+    "active_controls": [
+      "CTRL-AWS-EC2-IMDSV2",
+      "CTRL-AWS-EBS-ENC"
+    ],
+    "binary_state": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0
+    ],
+    "description": "Dual violation: EC2 IMDSv2 missing and EBS volume unencrypted"
+  },
+  {
+    "state_id": "v2_state_11",
+    "density_class": "dual",
+    "active_action_indices": [
+      9,
+      10
+    ],
+    "active_action_ids": [
+      "ACT_ENABLE_EBS_ENC",
+      "ACT_ENABLE_KMS_ROTATION"
+    ],
+    "active_controls": [
+      "CTRL-AWS-EBS-ENC",
+      "CTRL-AWS-KMS-ROTATION"
+    ],
+    "binary_state": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1
+    ],
+    "description": "Dual violation: EBS unencrypted and KMS rotation disabled"
+  },
+  {
+    "state_id": "v2_state_12",
+    "density_class": "dual",
+    "active_action_indices": [
+      1,
+      10
+    ],
+    "active_action_ids": [
+      "ACT_ENABLE_RDS_ENC",
+      "ACT_ENABLE_KMS_ROTATION"
+    ],
+    "active_controls": [
+      "CTRL-AWS-RDS-STORAGE-ENC",
+      "CTRL-AWS-KMS-ROTATION"
+    ],
+    "binary_state": [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    "description": "Dual violation: RDS unencrypted and KMS rotation disabled"
+  },
+  {
+    "state_id": "v2_state_13",
+    "density_class": "dual",
+    "active_action_indices": [
+      3,
+      8
+    ],
+    "active_action_ids": [
+      "ACT_BLOCK_S3_PUBLIC",
+      "ACT_ENFORCE_IMDSV2"
+    ],
+    "active_controls": [
+      "CTRL-AWS-S3-NO-PUBLIC",
+      "CTRL-AWS-EC2-IMDSV2"
+    ],
+    "binary_state": [
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0
+    ],
+    "description": "Dual violation: S3 public access block missing and EC2 IMDSv2 missing"
+  },
+  {
+    "state_id": "v2_state_14",
+    "density_class": "dual",
+    "active_action_indices": [
+      5,
+      7
+    ],
+    "active_action_ids": [
+      "ACT_ENABLE_CLOUDTRAIL_MULTI",
+      "ACT_UPGRADE_WEAK_CRYPTO"
+    ],
+    "active_controls": [
+      "CTRL-AWS-CLOUDTRAIL-MULTI",
+      "CTRL-SONAR-ZERO-CRITICAL"
+    ],
+    "binary_state": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "description": "Dual violation: CloudTrail multi-region disabled and weak crypto cipher"
+  },
+  {
+    "state_id": "v2_state_15",
+    "density_class": "dual",
+    "active_action_indices": [
+      0,
+      2
+    ],
+    "active_action_ids": [
+      "ACT_DISABLE_RDS_PUBLIC",
+      "ACT_ENABLE_S3_ENC"
+    ],
+    "active_controls": [
+      "CTRL-AWS-RDS-NO-PUBLIC",
+      "CTRL-AWS-S3-ENC"
+    ],
+    "binary_state": [
+      1,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "description": "Dual violation: RDS public exposure and S3 unencrypted storage"
+  },
+  {
+    "state_id": "v2_state_16",
+    "density_class": "multi_3_to_5",
+    "active_action_indices": [
+      0,
+      1,
+      2
+    ],
+    "active_action_ids": [
+      "ACT_DISABLE_RDS_PUBLIC",
+      "ACT_ENABLE_RDS_ENC",
+      "ACT_ENABLE_S3_ENC"
+    ],
+    "active_controls": [
+      "CTRL-AWS-RDS-NO-PUBLIC",
+      "CTRL-AWS-RDS-STORAGE-ENC",
+      "CTRL-AWS-S3-ENC"
+    ],
+    "binary_state": [
+      1,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "description": "Multi-3: Database and object storage exposure and encryption"
+  },
+  {
+    "state_id": "v2_state_17",
+    "density_class": "multi_3_to_5",
+    "active_action_indices": [
+      3,
+      4,
+      5
+    ],
+    "active_action_ids": [
+      "ACT_BLOCK_S3_PUBLIC",
+      "ACT_EXTEND_LOG_RETENTION_180",
+      "ACT_ENABLE_CLOUDTRAIL_MULTI"
+    ],
+    "active_controls": [
+      "CTRL-AWS-S3-NO-PUBLIC",
+      "CTRL-AWS-LOG-180D",
+      "CTRL-AWS-CLOUDTRAIL-MULTI"
+    ],
+    "binary_state": [
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "description": "Multi-3: Storage perimeter and audit logging deficiencies"
+  },
+  {
+    "state_id": "v2_state_18",
+    "density_class": "multi_3_to_5",
+    "active_action_indices": [
+      6,
+      7,
+      8
+    ],
+    "active_action_ids": [
+      "ACT_PATCH_SONAR_INJECTION",
+      "ACT_UPGRADE_WEAK_CRYPTO",
+      "ACT_ENFORCE_IMDSV2"
+    ],
+    "active_controls": [
+      "CTRL-SONAR-INJECTION-FREE",
+      "CTRL-SONAR-ZERO-CRITICAL",
+      "CTRL-AWS-EC2-IMDSV2"
+    ],
+    "binary_state": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      0,
+      0
+    ],
+    "description": "Multi-3: Application injection, weak cipher, and host IMDS vulnerability"
+  },
+  {
+    "state_id": "v2_state_19",
+    "density_class": "multi_3_to_5",
+    "active_action_indices": [
+      8,
+      9,
+      10
+    ],
+    "active_action_ids": [
+      "ACT_ENFORCE_IMDSV2",
+      "ACT_ENABLE_EBS_ENC",
+      "ACT_ENABLE_KMS_ROTATION"
+    ],
+    "active_controls": [
+      "CTRL-AWS-EC2-IMDSV2",
+      "CTRL-AWS-EBS-ENC",
+      "CTRL-AWS-KMS-ROTATION"
+    ],
+    "binary_state": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1
+    ],
+    "description": "Multi-3: Compute, volume encryption, and key lifecycle non-compliance"
+  },
+  {
+    "state_id": "v2_state_20",
+    "density_class": "multi_3_to_5",
+    "active_action_indices": [
+      0,
+      2,
+      4,
+      6
+    ],
+    "active_action_ids": [
+      "ACT_DISABLE_RDS_PUBLIC",
+      "ACT_ENABLE_S3_ENC",
+      "ACT_EXTEND_LOG_RETENTION_180",
+      "ACT_PATCH_SONAR_INJECTION"
+    ],
+    "active_controls": [
+      "CTRL-AWS-RDS-NO-PUBLIC",
+      "CTRL-AWS-S3-ENC",
+      "CTRL-AWS-LOG-180D",
+      "CTRL-SONAR-INJECTION-FREE"
+    ],
+    "binary_state": [
+      1,
+      0,
+      1,
+      0,
+      1,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "description": "Multi-4: Critical cross-domain exposure (RDS, S3, Logging, App SQLi)"
+  },
+  {
+    "state_id": "v2_state_21",
+    "density_class": "multi_3_to_5",
+    "active_action_indices": [
+      1,
+      3,
+      5,
+      7
+    ],
+    "active_action_ids": [
+      "ACT_ENABLE_RDS_ENC",
+      "ACT_BLOCK_S3_PUBLIC",
+      "ACT_ENABLE_CLOUDTRAIL_MULTI",
+      "ACT_UPGRADE_WEAK_CRYPTO"
+    ],
+    "active_controls": [
+      "CTRL-AWS-RDS-STORAGE-ENC",
+      "CTRL-AWS-S3-NO-PUBLIC",
+      "CTRL-AWS-CLOUDTRAIL-MULTI",
+      "CTRL-SONAR-ZERO-CRITICAL"
+    ],
+    "binary_state": [
+      0,
+      1,
+      0,
+      1,
+      0,
+      1,
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "description": "Multi-4: Cryptographic and perimeter controls across storage and compute"
+  },
+  {
+    "state_id": "v2_state_22",
+    "density_class": "multi_3_to_5",
+    "active_action_indices": [
+      2,
+      4,
+      8,
+      10
+    ],
+    "active_action_ids": [
+      "ACT_ENABLE_S3_ENC",
+      "ACT_EXTEND_LOG_RETENTION_180",
+      "ACT_ENFORCE_IMDSV2",
+      "ACT_ENABLE_KMS_ROTATION"
+    ],
+    "active_controls": [
+      "CTRL-AWS-S3-ENC",
+      "CTRL-AWS-LOG-180D",
+      "CTRL-AWS-EC2-IMDSV2",
+      "CTRL-AWS-KMS-ROTATION"
+    ],
+    "binary_state": [
+      0,
+      0,
+      1,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      1
+    ],
+    "description": "Multi-4: Storage encryption, audit retention, IMDSv2, and key rotation"
+  },
+  {
+    "state_id": "v2_state_23",
+    "density_class": "multi_3_to_5",
+    "active_action_indices": [
+      0,
+      5,
+      7,
+      9
+    ],
+    "active_action_ids": [
+      "ACT_DISABLE_RDS_PUBLIC",
+      "ACT_ENABLE_CLOUDTRAIL_MULTI",
+      "ACT_UPGRADE_WEAK_CRYPTO",
+      "ACT_ENABLE_EBS_ENC"
+    ],
+    "active_controls": [
+      "CTRL-AWS-RDS-NO-PUBLIC",
+      "CTRL-AWS-CLOUDTRAIL-MULTI",
+      "CTRL-SONAR-ZERO-CRITICAL",
+      "CTRL-AWS-EBS-ENC"
+    ],
+    "binary_state": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      1,
+      0,
+      1,
+      0
+    ],
+    "description": "Multi-4: Data exposure, audit trail, weak crypto, and disk encryption"
+  },
+  {
+    "state_id": "v2_state_24",
+    "density_class": "multi_3_to_5",
+    "active_action_indices": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "active_action_ids": [
+      "ACT_DISABLE_RDS_PUBLIC",
+      "ACT_ENABLE_RDS_ENC",
+      "ACT_ENABLE_S3_ENC",
+      "ACT_BLOCK_S3_PUBLIC",
+      "ACT_EXTEND_LOG_RETENTION_180"
+    ],
+    "active_controls": [
+      "CTRL-AWS-RDS-NO-PUBLIC",
+      "CTRL-AWS-RDS-STORAGE-ENC",
+      "CTRL-AWS-S3-ENC",
+      "CTRL-AWS-S3-NO-PUBLIC",
+      "CTRL-AWS-LOG-180D"
+    ],
+    "binary_state": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "description": "Multi-5: Comprehensive data-tier and logging compliance failure"
+  },
+  {
+    "state_id": "v2_state_25",
+    "density_class": "multi_3_to_5",
+    "active_action_indices": [
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "active_action_ids": [
+      "ACT_ENABLE_CLOUDTRAIL_MULTI",
+      "ACT_PATCH_SONAR_INJECTION",
+      "ACT_UPGRADE_WEAK_CRYPTO",
+      "ACT_ENFORCE_IMDSV2",
+      "ACT_ENABLE_EBS_ENC"
+    ],
+    "active_controls": [
+      "CTRL-AWS-CLOUDTRAIL-MULTI",
+      "CTRL-SONAR-INJECTION-FREE",
+      "CTRL-SONAR-ZERO-CRITICAL",
+      "CTRL-AWS-EC2-IMDSV2",
+      "CTRL-AWS-EBS-ENC"
+    ],
+    "binary_state": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0
+    ],
+    "description": "Multi-5: Multi-region trail, app layer vulnerabilities, and disk security"
+  },
+  {
+    "state_id": "v2_state_26",
+    "density_class": "dense_6_to_9",
+    "active_action_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "active_action_ids": [
+      "ACT_DISABLE_RDS_PUBLIC",
+      "ACT_ENABLE_RDS_ENC",
+      "ACT_ENABLE_S3_ENC",
+      "ACT_BLOCK_S3_PUBLIC",
+      "ACT_EXTEND_LOG_RETENTION_180",
+      "ACT_ENABLE_CLOUDTRAIL_MULTI"
+    ],
+    "active_controls": [
+      "CTRL-AWS-RDS-NO-PUBLIC",
+      "CTRL-AWS-RDS-STORAGE-ENC",
+      "CTRL-AWS-S3-ENC",
+      "CTRL-AWS-S3-NO-PUBLIC",
+      "CTRL-AWS-LOG-180D",
+      "CTRL-AWS-CLOUDTRAIL-MULTI"
+    ],
+    "binary_state": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "description": "Dense-6: Full cloud infrastructure storage and audit non-compliance"
+  },
+  {
+    "state_id": "v2_state_27",
+    "density_class": "dense_6_to_9",
+    "active_action_indices": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "active_action_ids": [
+      "ACT_EXTEND_LOG_RETENTION_180",
+      "ACT_ENABLE_CLOUDTRAIL_MULTI",
+      "ACT_PATCH_SONAR_INJECTION",
+      "ACT_UPGRADE_WEAK_CRYPTO",
+      "ACT_ENFORCE_IMDSV2",
+      "ACT_ENABLE_EBS_ENC"
+    ],
+    "active_controls": [
+      "CTRL-AWS-LOG-180D",
+      "CTRL-AWS-CLOUDTRAIL-MULTI",
+      "CTRL-SONAR-INJECTION-FREE",
+      "CTRL-SONAR-ZERO-CRITICAL",
+      "CTRL-AWS-EC2-IMDSV2",
+      "CTRL-AWS-EBS-ENC"
+    ],
+    "binary_state": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0
+    ],
+    "description": "Dense-6: Audit logging, compute security, and application flaws"
+  },
+  {
+    "state_id": "v2_state_28",
+    "density_class": "dense_6_to_9",
+    "active_action_indices": [
+      0,
+      2,
+      4,
+      6,
+      8,
+      9,
+      10
+    ],
+    "active_action_ids": [
+      "ACT_DISABLE_RDS_PUBLIC",
+      "ACT_ENABLE_S3_ENC",
+      "ACT_EXTEND_LOG_RETENTION_180",
+      "ACT_PATCH_SONAR_INJECTION",
+      "ACT_ENFORCE_IMDSV2",
+      "ACT_ENABLE_EBS_ENC",
+      "ACT_ENABLE_KMS_ROTATION"
+    ],
+    "active_controls": [
+      "CTRL-AWS-RDS-NO-PUBLIC",
+      "CTRL-AWS-S3-ENC",
+      "CTRL-AWS-LOG-180D",
+      "CTRL-SONAR-INJECTION-FREE",
+      "CTRL-AWS-EC2-IMDSV2",
+      "CTRL-AWS-EBS-ENC",
+      "CTRL-AWS-KMS-ROTATION"
+    ],
+    "binary_state": [
+      1,
+      0,
+      1,
+      0,
+      1,
+      0,
+      1,
+      0,
+      1,
+      1,
+      1
+    ],
+    "description": "Dense-7: Severe multi-vector exposure spanning IaaS, PaaS, and App"
+  },
+  {
+    "state_id": "v2_state_29",
+    "density_class": "dense_6_to_9",
+    "active_action_indices": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      7,
+      8,
+      10
+    ],
+    "active_action_ids": [
+      "ACT_DISABLE_RDS_PUBLIC",
+      "ACT_ENABLE_RDS_ENC",
+      "ACT_ENABLE_S3_ENC",
+      "ACT_BLOCK_S3_PUBLIC",
+      "ACT_ENABLE_CLOUDTRAIL_MULTI",
+      "ACT_UPGRADE_WEAK_CRYPTO",
+      "ACT_ENFORCE_IMDSV2",
+      "ACT_ENABLE_KMS_ROTATION"
+    ],
+    "active_controls": [
+      "CTRL-AWS-RDS-NO-PUBLIC",
+      "CTRL-AWS-RDS-STORAGE-ENC",
+      "CTRL-AWS-S3-ENC",
+      "CTRL-AWS-S3-NO-PUBLIC",
+      "CTRL-AWS-CLOUDTRAIL-MULTI",
+      "CTRL-SONAR-ZERO-CRITICAL",
+      "CTRL-AWS-EC2-IMDSV2",
+      "CTRL-AWS-KMS-ROTATION"
+    ],
+    "binary_state": [
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1
+    ],
+    "description": "Dense-8: Widespread regulatory non-compliance across DPDP and CERT-In"
+  },
+  {
+    "state_id": "v2_state_30",
+    "density_class": "dense_6_to_9",
+    "active_action_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      10
+    ],
+    "active_action_ids": [
+      "ACT_DISABLE_RDS_PUBLIC",
+      "ACT_ENABLE_RDS_ENC",
+      "ACT_ENABLE_S3_ENC",
+      "ACT_BLOCK_S3_PUBLIC",
+      "ACT_EXTEND_LOG_RETENTION_180",
+      "ACT_ENABLE_CLOUDTRAIL_MULTI",
+      "ACT_PATCH_SONAR_INJECTION",
+      "ACT_ENFORCE_IMDSV2",
+      "ACT_ENABLE_KMS_ROTATION"
+    ],
+    "active_controls": [
+      "CTRL-AWS-RDS-NO-PUBLIC",
+      "CTRL-AWS-RDS-STORAGE-ENC",
+      "CTRL-AWS-S3-ENC",
+      "CTRL-AWS-S3-NO-PUBLIC",
+      "CTRL-AWS-LOG-180D",
+      "CTRL-AWS-CLOUDTRAIL-MULTI",
+      "CTRL-SONAR-INJECTION-FREE",
+      "CTRL-AWS-EC2-IMDSV2",
+      "CTRL-AWS-KMS-ROTATION"
+    ],
+    "binary_state": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      0,
+      1
+    ],
+    "description": "Dense-9: Near-total infrastructure and application compliance collapse"
+  }
+]
